@@ -1169,6 +1169,30 @@ set @resources='
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.ShowLinkToAllResultInSearchAutoComplete.Hint">
     <Value>Determines whether the link to all results should be displayed in the autocomplete search box. Displayed if the number of items found is greater than the displayed quantity in the autocomplete box.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.System.Maintenance.ReIndexTables">
+    <Value>Re-index database tables</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.System.Maintenance.ReIndexTables.Complete">
+    <Value>Re-indexing of database tables complete</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.System.Maintenance.ReIndexTables.Lable">
+    <Value>Modifies existing tables by rebuilding the index. When you execute re-indexing in a table, only the statistics associated with the indexes are updated. Automatic or manual statistics created in the table (instead of an index) are not updated.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.System.Maintenance.ReIndexTables.Progress">
+    <Value>Re-indexing...</Value>
+  </LocaleResource>  
+  <LocaleResource Name="Admin.System.Maintenance.ReIndexTables.ReIndexNow">
+    <Value>Re-index</Value>
+  </LocaleResource>
+  <LocaleResource Name="ShoppingCart.PreOrderAvailability">
+    <Value>pre-order availability</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DisplayDatePreOrderAvailability">
+    <Value>Display the date for a pre-order availability</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DisplayDatePreOrderAvailability.Hint">
+    <Value>Check to display the date for pre-order availability.</Value>
+  </LocaleResource>   
 </Language>
 '
 
@@ -2949,4 +2973,12 @@ GO
 ALTER TABLE [dbo].[PictureBinary] WITH CHECK ADD CONSTRAINT [FK_PictureBinary_Picture_PictureId] FOREIGN KEY(PictureId)
 REFERENCES [dbo].[Picture] ([Id])
 ON DELETE CASCADE
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'catalogsettings.displaydatepreorderavailability')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'catalogsettings.displaydatepreorderavailability', N'False', 0)
+END
 GO
