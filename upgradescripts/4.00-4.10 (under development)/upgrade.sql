@@ -1193,6 +1193,54 @@ set @resources='
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.DisplayDatePreOrderAvailability.Hint">
     <Value>Check to display the date for pre-order availability.</Value>
   </LocaleResource>   
+  <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.AllowCustomersToCheckGiftCardBalance">
+    <Value>Allow customers to check gift card balance</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.AllowCustomersToCheckGiftCardBalance.Hint">
+    <Value>Check to allow customers to check gift card balance. If checked, then CAPTCHA setting must be enabled in the admin area. This feature is potentially not safe and CAPTCHA is needed to prevent and complicate bruteforce.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PageTitle.CheckGiftCardBalance">
+    <Value>Check gift card balance</Value>
+  </LocaleResource>
+  <LocaleResource Name="CheckGiftCardBalance">
+    <Value>Check gift card balance</Value>
+  </LocaleResource>
+  <LocaleResource Name="CheckGiftCard.GiftCardCouponCode.Button">
+    <Value>Check gift card</Value>
+  </LocaleResource>
+  <LocaleResource Name="CheckGiftCardBalance.GiftCardCouponCode.Invalid">
+    <Value>Coupon code is not valid.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CheckGiftCardBalance.GiftCardCouponCode.Empty">
+    <Value>Coupon code is empty.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.System.Maintenance.BackupDatabase.Description">
+    <Value>Database backup functionality works only when your nopCommerce application is deployed on the same server as the database. Otherwise you will have to take care of the backup yourself (contact your system administrator).</Value>
+  </LocaleResource>
+  <LocaleResource Name="Catalog.OrderBy.Label">
+    <Value>Select product sort order</Value>
+  </LocaleResource>
+  <LocaleResource Name="Catalog.PageSize.Label">
+    <Value>Select number of products per page</Value>
+  </LocaleResource>
+  <LocaleResource Name="Currency.Selector.Label">
+    <Value>Currency selector</Value>
+  </LocaleResource>
+  <LocaleResource Name="Search.SearchBox.Text.Label">
+    <Value>Search store</Value>
+  </LocaleResource>
+  <LocaleResource Name="ShoppingCart.DiscountCouponCode.Label">
+    <Value>Enter discount coupon code</Value>
+  </LocaleResource>
+  <LocaleResource Name="ShoppingCart.GiftCardCouponCode.Label">
+    <Value>Enter gift card code</Value>
+  </LocaleResource>	
+  <LocaleResource Name="Admin.System.Warnings.PluginNotEnabled">
+    <Value>You could uninstall and remove the plugin(s) which you don''t use, this might increase performance</Value>
+  </LocaleResource>  
+  <LocaleResource Name="Admin.System.Warnings.Errors">
+    <Value>The store has some error(s) or warning(s). Please find more information on the Warnings page.</Value>
+  </LocaleResource>
 </Language>
 '
 
@@ -2241,8 +2289,12 @@ BEGIN
 	IF @CategoryIdsCount > 0
 	BEGIN
 		SET @sql = @sql + '
-		AND pcm.CategoryId IN (SELECT CategoryId FROM #FilteredCategoryIds)'
+		AND pcm.CategoryId IN ('
 		
+		SET @sql = @sql + + CAST(@CategoryIds AS nvarchar(max))
+
+		SET @sql = @sql + ')'
+
 		IF @FeaturedProducts IS NOT NULL
 		BEGIN
 			SET @sql = @sql + '
@@ -2980,5 +3032,29 @@ IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'catalogsettings.displayd
 BEGIN
 	INSERT [Setting] ([Name], [Value], [StoreId])
 	VALUES (N'catalogsettings.displaydatepreorderavailability', N'False', 0)
+END
+GO
+	
+--new setting	
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'adminareasettings.richeditorallowstyletag')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'adminareasettings.richeditorallowstyletag', N'False', 0)
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'customersettings.allowcustomerstocheckgiftcardbalance')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'customersettings.allowcustomerstocheckgiftcardbalance', N'false', 0)
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'adminareasettings.checkcopyrightremovalkey')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'adminareasettings.checkcopyrightremovalkey', N'true', 0)
 END
 GO

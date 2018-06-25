@@ -81,11 +81,12 @@ namespace Nop.Services.Tests.Helpers
                                     {
                                         StoreId = 0,
                                         EntityId = customer.Id,
-                                        Key = SystemCustomerAttributeNames.TimeZoneId,
+                                        Key = NopCustomerDefaults.TimeZoneIdAttribute,
                                         KeyGroup = "Customer",
                                         Value = "Russian Standard Time" //(GMT+03:00) Moscow, St. Petersburg, Volgograd
                                     }
                             });
+
             var timeZone = _dateTimeHelper.GetCustomerTimeZone(customer);
             timeZone.ShouldNotBeNull();
             timeZone.Id.ShouldEqual("Russian Standard Time");
@@ -109,7 +110,7 @@ namespace Nop.Services.Tests.Helpers
                                     {
                                         StoreId = 0,
                                         EntityId = customer.Id,
-                                        Key = SystemCustomerAttributeNames.TimeZoneId,
+                                        Key = NopCustomerDefaults.TimeZoneIdAttribute,
                                         KeyGroup = "Customer",
                                         Value = "Russian Standard Time" //(GMT+03:00) Moscow, St. Petersburg, Volgograd
                                     }

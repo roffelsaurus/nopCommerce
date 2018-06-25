@@ -158,7 +158,6 @@ namespace Nop.Services.Tests.Customers
             _eventPublisher = new Mock<IEventPublisher>();
             _eventPublisher.Setup(x => x.Publish(It.IsAny<object>()));
 
-
             _storeService = new Mock<IStoreService>();
             _customerRoleRepo = new Mock<IRepository<CustomerRole>>();
             _genericAttributeRepo = new Mock<IRepository<GenericAttribute>>();
@@ -245,7 +244,7 @@ namespace Nop.Services.Tests.Customers
             {
                 Active = true,
                 IsSystemRole = true,
-                SystemName = SystemCustomerRoleNames.Registered
+                SystemName = NopCustomerDefaults.RegisteredRoleName
             });
         }
 
