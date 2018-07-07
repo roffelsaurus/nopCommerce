@@ -64,10 +64,11 @@ namespace Nop.Services.Tasks
                         client.UploadValues(_scheduleTaskUrl, postData);
                     }
                 }
-                catch (Exception ex)
+                catch (WebException ex)
                 {
-                    var logger = EngineContext.Current.Resolve<ILogger>();
-                    logger.Error(ex.Message, ex);
+                    //var logger = EngineContext.Current.Resolve<ILogger>();
+                  //  logger.Error(ex.Message, ex);
+                    Console.WriteLine($"Taskthread failed for url {_scheduleTaskUrl} with data {postData}. Exception: {ex}");
                 }
             }
             IsRunning = false;
