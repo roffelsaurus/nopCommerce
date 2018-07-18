@@ -6,7 +6,6 @@ using Nop.Services.Catalog;
 using Nop.Services.Customers;
 using Nop.Services.Helpers;
 using Nop.Services.Localization;
-using Nop.Services.Orders;
 using Nop.Services.Stores;
 using Nop.Services.Tax;
 using Nop.Web.Areas.Admin.Models.ShoppingCart;
@@ -135,7 +134,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     shoppingCartModel.CustomerEmail = customer.IsRegistered()
                         ? customer.Email : _localizationService.GetResource("Admin.Customers.Guest");
                     shoppingCartModel.TotalItems = customer.ShoppingCartItems
-                        .Where(item => item.ShoppingCartType == searchModel.ShoppingCartType).ToList().GetTotalProducts();
+                        .Where(item => item.ShoppingCartType == searchModel.ShoppingCartType).Sum(item => item.Quantity);
 
                     return shoppingCartModel;
                 }),

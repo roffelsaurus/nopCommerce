@@ -30,7 +30,6 @@ using Nop.Services.Tax;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Areas.Admin.Infrastructure.Mapper.Extensions;
 using Nop.Web.Areas.Admin.Models.Customers;
-using Nop.Web.Extensions;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.Filters;
@@ -47,7 +46,6 @@ namespace Nop.Web.Areas.Admin.Controllers
         private readonly ForumSettings _forumSettings;
         private readonly GdprSettings _gdprSettings;
         private readonly IAddressAttributeParser _addressAttributeParser;
-        private readonly IAddressAttributeService _addressAttributeService;
         private readonly IAddressService _addressService;
         private readonly ICustomerActivityService _customerActivityService;
         private readonly ICustomerAttributeParser _customerAttributeParser;
@@ -83,7 +81,6 @@ namespace Nop.Web.Areas.Admin.Controllers
             ForumSettings forumSettings,
             GdprSettings gdprSettings,
             IAddressAttributeParser addressAttributeParser,
-            IAddressAttributeService addressAttributeService,
             IAddressService addressService,
             ICustomerActivityService customerActivityService,
             ICustomerAttributeParser customerAttributeParser,
@@ -115,7 +112,6 @@ namespace Nop.Web.Areas.Admin.Controllers
             this._forumSettings = forumSettings;
             this._gdprSettings = gdprSettings;
             this._addressAttributeParser = addressAttributeParser;
-            this._addressAttributeService = addressAttributeService;
             this._addressService = addressService;
             this._customerActivityService = customerActivityService;
             this._customerAttributeParser = customerAttributeParser;
@@ -585,7 +581,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     //VAT number
                     if (_taxSettings.EuVatEnabled)
                     {
-                        var prevVatNumber = customer.GetAttribute<string>(NopCustomerDefaults.VatNumberAttribute);
+                        var prevVatNumber = _genericAttributeService.GetAttribute<string>(customer, NopCustomerDefaults.VatNumberAttribute);
 
                         _genericAttributeService.SaveAttribute(customer, NopCustomerDefaults.VatNumberAttribute, model.VatNumber);
                         //set VAT number status
@@ -1011,7 +1007,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     EmailAccountId = emailAccount.Id,
                     FromName = emailAccount.DisplayName,
                     From = emailAccount.Email,
-                    ToName = customer.GetFullName(),
+                    ToName = _customerService.GetCustomerFullName(customer),
                     To = customer.Email,
                     Subject = model.SendEmail.Subject,
                     Body = model.SendEmail.Body,
@@ -1167,7 +1163,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             if (address == null)
                 return Content("No address found with the specified id");
 
-            customer.RemoveAddress(address);
+            _customerService.RemoveCustomerAddress(customer, address);
             _customerService.UpdateCustomer(customer);
 
             //now delete the address record
@@ -1204,7 +1200,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 return RedirectToAction("List");
 
             //custom address attributes
-            var customAttributes = model.Form.ParseCustomAddressAttributes(_addressAttributeParser, _addressAttributeService);
+            var customAttributes = _addressAttributeParser.ParseCustomAddressAttributes(model.Form);
             var customAttributeWarnings = _addressAttributeParser.GetAttributeWarnings(customAttributes);
             foreach (var error in customAttributeWarnings)
             {
@@ -1276,7 +1272,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 return RedirectToAction("Edit", new { id = customer.Id });
 
             //custom address attributes
-            var customAttributes = model.Form.ParseCustomAddressAttributes(_addressAttributeParser, _addressAttributeService);
+            var customAttributes = _addressAttributeParser.ParseCustomAddressAttributes(model.Form);
             var customAttributeWarnings = _addressAttributeParser.GetAttributeWarnings(customAttributes);
             foreach (var error in customAttributeWarnings)
             {
@@ -1561,7 +1557,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 //export
                 //export
                 var bytes = _exportManager.ExportCustomerGdprInfoToXlsx(_workContext.CurrentCustomer, _storeContext.CurrentStore.Id);
-            
+
                 return File(bytes, MimeTypes.TextXlsx, $"customerdata-{customer.Id}.xlsx");
             }
             catch (Exception exc)

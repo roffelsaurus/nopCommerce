@@ -7,8 +7,6 @@ using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
-using Nop.Core.Domain.Forums;
-using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Security;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -36,9 +34,6 @@ namespace Nop.Services.Tests.Customers
         private Mock<IStoreService> _storeService;
         private Mock<IRepository<CustomerRole>> _customerRoleRepo;
         private Mock<IRepository<GenericAttribute>> _genericAttributeRepo;
-        private Mock<IRepository<Order>> _orderRepo;
-        private Mock<IRepository<ForumPost>> _forumPostRepo;
-        private Mock<IRepository<ForumTopic>> _forumTopicRepo;
         private Mock<IGenericAttributeService> _genericAttributeService;
         private Mock<INewsLetterSubscriptionService> _newsLetterSubscriptionService;
         private Mock<IRewardPointService> _rewardPointService;
@@ -161,9 +156,6 @@ namespace Nop.Services.Tests.Customers
             _storeService = new Mock<IStoreService>();
             _customerRoleRepo = new Mock<IRepository<CustomerRole>>();
             _genericAttributeRepo = new Mock<IRepository<GenericAttribute>>();
-            _orderRepo = new Mock<IRepository<Order>>();
-            _forumPostRepo = new Mock<IRepository<ForumPost>>();
-            _forumTopicRepo = new Mock<IRepository<ForumTopic>>();
             _genericAttributeService = new Mock<IGenericAttributeService>();
             _newsLetterSubscriptionService = new Mock<INewsLetterSubscriptionService>();
             _rewardPointService = new Mock<IRewardPointService>();
@@ -172,16 +164,32 @@ namespace Nop.Services.Tests.Customers
             _workContext = new Mock<IWorkContext>();
             _workflowMessageService = new Mock<IWorkflowMessageService>();
             _customerCustomerRoleMappingRepo = new Mock<IRepository<CustomerCustomerRoleMapping>>();
+            
+             _customerService = new CustomerService(new CustomerSettings(), 
+                new NopNullCache(), 
+                null,
+                null,
+                _eventPublisher.Object,
+                _genericAttributeService.Object,
+                _customerRepo.Object,
+                _customerCustomerRoleMappingRepo.Object,
+                _customerPasswordRepo.Object,
+                _customerRoleRepo.Object,
+                _genericAttributeRepo.Object,
+                null);
 
-            _customerService = new CustomerService(new NopNullCache(), _customerRepo.Object, _customerCustomerRoleMappingRepo.Object, _customerPasswordRepo.Object, _customerRoleRepo.Object,
-                _genericAttributeRepo.Object, _orderRepo.Object, _forumPostRepo.Object, _forumTopicRepo.Object,
-                null, null, null, null, null,
-                _genericAttributeService.Object, null, null, _eventPublisher.Object, _customerSettings, null);
-
-            _customerRegistrationService = new CustomerRegistrationService(_customerService,
-                _encryptionService, _newsLetterSubscriptionService.Object, _localizationService.Object,
-                _storeService.Object, _rewardPointService.Object, _workContext.Object, _genericAttributeService.Object,
-                _workflowMessageService.Object, _eventPublisher.Object, _rewardPointsSettings, _customerSettings);
+            _customerRegistrationService = new CustomerRegistrationService(_customerSettings,
+                _customerService,
+                _encryptionService,
+                _eventPublisher.Object,
+                _genericAttributeService.Object,
+                _localizationService.Object,
+                _newsLetterSubscriptionService.Object,
+                _rewardPointService.Object,
+                _storeService.Object,
+                _workContext.Object,
+                _workflowMessageService.Object,
+                _rewardPointsSettings);
         }
 
         //[Test]

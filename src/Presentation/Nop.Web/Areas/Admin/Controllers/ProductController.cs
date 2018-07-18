@@ -54,6 +54,7 @@ namespace Nop.Web.Areas.Admin.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly ILocalizedEntityService _localizedEntityService;
         private readonly IManufacturerService _manufacturerService;
+        private readonly INopFileProvider _fileProvider;
         private readonly IPdfService _pdfService;
         private readonly IPermissionService _permissionService;
         private readonly IPictureService _pictureService;
@@ -71,7 +72,6 @@ namespace Nop.Web.Areas.Admin.Controllers
         private readonly IUrlRecordService _urlRecordService;
         private readonly IWorkContext _workContext;
         private readonly VendorSettings _vendorSettings;
-        private readonly INopFileProvider _fileProvider;
 
         #endregion
 
@@ -91,6 +91,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             ILocalizationService localizationService,
             ILocalizedEntityService localizedEntityService,
             IManufacturerService manufacturerService,
+            INopFileProvider fileProvider,
             IPdfService pdfService,
             IPermissionService permissionService,
             IPictureService pictureService,
@@ -107,8 +108,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             IStoreService storeService,
             IUrlRecordService urlRecordService,
             IWorkContext workContext,
-            VendorSettings vendorSettings,
-            INopFileProvider fileProvider)
+            VendorSettings vendorSettings)
         {
             this._aclService = aclService;
             this._backInStockSubscriptionService = backInStockSubscriptionService;
@@ -124,6 +124,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             this._localizationService = localizationService;
             this._localizedEntityService = localizedEntityService;
             this._manufacturerService = manufacturerService;
+            this._fileProvider = fileProvider;
             this._pdfService = pdfService;
             this._permissionService = permissionService;
             this._pictureService = pictureService;
@@ -141,7 +142,6 @@ namespace Nop.Web.Areas.Admin.Controllers
             this._urlRecordService = urlRecordService;
             this._workContext = workContext;
             this._vendorSettings = vendorSettings;
-            this._fileProvider = fileProvider;
         }
 
         #endregion
@@ -178,7 +178,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     localized.LanguageId);
 
                 //search engine name
-                var seName = product.ValidateSeName(localized.SeName, localized.Name, false);
+                var seName = _urlRecordService.ValidateSeName(product, localized.SeName, localized.Name, false);
                 _urlRecordService.SaveSlug(product, seName, localized.LanguageId);
             }
         }
@@ -192,7 +192,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     localized.Name,
                     localized.LanguageId);
 
-                var seName = productTag.ValidateSeName(string.Empty, localized.Name, false);
+                var seName = _urlRecordService.ValidateSeName(productTag, string.Empty, localized.Name, false);
                 _urlRecordService.SaveSlug(productTag, seName, localized.LanguageId);
             }
         }
@@ -284,7 +284,8 @@ namespace Nop.Web.Areas.Admin.Controllers
 
             //add categories
             foreach (var categoryId in model.SelectedCategoryIds)
-                if (existingProductCategories.FindProductCategory(product.Id, categoryId) == null)
+            {
+                if (_categoryService.FindProductCategory(existingProductCategories, product.Id, categoryId) == null)
                 {
                     //find next display order
                     var displayOrder = 1;
@@ -298,6 +299,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                         DisplayOrder = displayOrder
                     });
                 }
+            }
         }
 
         protected virtual void SaveManufacturerMappings(Product product, ProductModel model)
@@ -311,7 +313,8 @@ namespace Nop.Web.Areas.Admin.Controllers
 
             //add manufacturers
             foreach (var manufacturerId in model.SelectedManufacturerIds)
-                if (existingProductManufacturers.FindProductManufacturer(product.Id, manufacturerId) == null)
+            {
+                if (_manufacturerService.FindProductManufacturer(existingProductManufacturers, product.Id, manufacturerId) == null)
                 {
                     //find next display order
                     var displayOrder = 1;
@@ -325,6 +328,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                         DisplayOrder = displayOrder
                     });
                 }
+            }
         }
 
         protected virtual void SaveDiscountMappings(Product product, ProductModel model)
@@ -469,7 +473,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                                     DownloadGuid = Guid.NewGuid(),
                                     UseDownloadUrl = false,
                                     DownloadUrl = string.Empty,
-                                    DownloadBinary = httpPostedFile.GetDownloadBits(),
+                                    DownloadBinary = _downloadService.GetDownloadBits(httpPostedFile),
                                     ContentType = httpPostedFile.ContentType,
                                     Filename = _fileProvider.GetFileNameWithoutExtension(httpPostedFile.FileName),
                                     Extension = _fileProvider.GetFileExtension(httpPostedFile.FileName),
@@ -839,7 +843,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 _productService.InsertProduct(product);
 
                 //search engine name
-                model.SeName = product.ValidateSeName(model.SeName, product.Name, true);
+                model.SeName = _urlRecordService.ValidateSeName(product, model.SeName, product.Name, true);
                 _urlRecordService.SaveSlug(product, model.SeName, 0);
 
                 //locales
@@ -948,7 +952,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     model.ShowOnHomePage = product.ShowOnHomePage;
 
                 //some previously used values
-                var prevTotalStockQuantity = product.GetTotalStockQuantity();
+                var prevTotalStockQuantity = _productService.GetTotalStockQuantity(product);
                 var prevDownloadId = product.DownloadId;
                 var prevSampleDownloadId = product.SampleDownloadId;
                 var previousStockQuantity = product.StockQuantity;
@@ -961,7 +965,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 _productService.UpdateProduct(product);
 
                 //search engine name
-                model.SeName = product.ValidateSeName(model.SeName, product.Name, true);
+                model.SeName = _urlRecordService.ValidateSeName(product, model.SeName, product.Name, true);
                 _urlRecordService.SaveSlug(product, model.SeName, 0);
 
                 //locales
@@ -995,7 +999,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 if (product.ManageInventoryMethod == ManageInventoryMethod.ManageStock &&
                     product.BackorderMode == BackorderMode.NoBackorders &&
                     product.AllowBackInStockSubscriptions &&
-                    product.GetTotalStockQuantity() > 0 &&
+                    _productService.GetTotalStockQuantity(product) > 0 &&
                     prevTotalStockQuantity <= 0 &&
                     product.Published &&
                     !product.Deleted)
@@ -1341,7 +1345,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     if (_workContext.CurrentVendor != null && product.VendorId != _workContext.CurrentVendor.Id)
                         continue;
 
-                    if (existingRelatedProducts.FindRelatedProduct(model.ProductId, product.Id) != null)
+                    if (_productService.FindRelatedProduct(existingRelatedProducts, model.ProductId, product.Id) != null)
                         continue;
 
                     _productService.InsertRelatedProduct(new RelatedProduct
@@ -1445,7 +1449,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     if (_workContext.CurrentVendor != null && product.VendorId != _workContext.CurrentVendor.Id)
                         continue;
 
-                    if (existingCrossSellProducts.FindCrossSellProduct(model.ProductId, product.Id) != null)
+                    if (_productService.FindCrossSellProduct(existingCrossSellProducts, model.ProductId, product.Id) != null)
                         continue;
 
                     _productService.InsertCrossSellProduct(new CrossSellProduct
@@ -1910,7 +1914,7 @@ namespace Nop.Web.Areas.Admin.Controllers
 
             //prepare model
             model = _productModelFactory.PrepareProductTagModel(model, productTag, true);
-            
+
             //if we got this far, something failed, redisplay form
             return View(model);
         }
@@ -2186,7 +2190,7 @@ namespace Nop.Web.Areas.Admin.Controllers
         }
 
         #endregion
-        
+
         #region Bulk editing
 
         public virtual IActionResult BulkEdit()
@@ -2232,7 +2236,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 if (_workContext.CurrentVendor != null && product.VendorId != _workContext.CurrentVendor.Id)
                     continue;
 
-                var prevTotalStockQuantity = product.GetTotalStockQuantity();
+                var prevTotalStockQuantity = _productService.GetTotalStockQuantity(product);
                 var previousStockQuantity = product.StockQuantity;
 
                 product.Name = pModel.Name;
@@ -2248,7 +2252,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 if (product.ManageInventoryMethod == ManageInventoryMethod.ManageStock &&
                     product.BackorderMode == BackorderMode.NoBackorders &&
                     product.AllowBackInStockSubscriptions &&
-                    product.GetTotalStockQuantity() > 0 &&
+                    _productService.GetTotalStockQuantity(product) > 0 &&
                     prevTotalStockQuantity <= 0 &&
                     product.Published &&
                     !product.Deleted)
@@ -2581,7 +2585,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 //localization
                 foreach (var lang in languages)
                 {
-                    var name = predefinedValue.GetLocalized(x => x.Name, lang.Id, false, false);
+                    var name = _localizationService.GetLocalized(predefinedValue, x => x.Name, lang.Id, false, false);
                     if (!string.IsNullOrEmpty(name))
                         _localizedEntityService.SaveLocalizedValue(pav, x => x.Name, name, lang.Id);
                 }

@@ -7,11 +7,12 @@ using Nop.Core.Data;
 using Nop.Core.Data.Extensions;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
+using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Security;
 using Nop.Core.Domain.Stores;
 using Nop.Data;
-using Nop.Services.Customers;
 using Nop.Services.Events;
+using Nop.Services.Localization;
 using Nop.Services.Security;
 using Nop.Services.Stores;
 
@@ -24,79 +25,65 @@ namespace Nop.Services.Catalog
     {
         #region Fields
 
-        private readonly IRepository<Category> _categoryRepository;
-        private readonly IRepository<ProductCategory> _productCategoryRepository;
-        private readonly IRepository<Product> _productRepository;
-        private readonly IRepository<AclRecord> _aclRepository;
-        private readonly IRepository<StoreMapping> _storeMappingRepository;
-        private readonly IDbContext _dbContext;
-        private readonly IDataProvider _dataProvider;
-        private readonly IWorkContext _workContext;
-        private readonly IStoreContext _storeContext;
-        private readonly IEventPublisher _eventPublisher;
-        private readonly ICacheManager _cacheManager;
-        private readonly IStaticCacheManager _staticCacheManager;
-        private readonly IStoreMappingService _storeMappingService;
-        private readonly IAclService _aclService;
-        private readonly CommonSettings _commonSettings;
         private readonly CatalogSettings _catalogSettings;
+        private readonly CommonSettings _commonSettings;
+        private readonly IAclService _aclService;
+        private readonly ICacheManager _cacheManager;
+        private readonly IDataProvider _dataProvider;
+        private readonly IDbContext _dbContext;
+        private readonly IEventPublisher _eventPublisher;
+        private readonly ILocalizationService _localizationService;
+        private readonly IRepository<AclRecord> _aclRepository;
+        private readonly IRepository<Category> _categoryRepository;
+        private readonly IRepository<Product> _productRepository;
+        private readonly IRepository<ProductCategory> _productCategoryRepository;
+        private readonly IRepository<StoreMapping> _storeMappingRepository;
+        private readonly IStaticCacheManager _staticCacheManager;
+        private readonly IStoreContext _storeContext;
+        private readonly IStoreMappingService _storeMappingService;
+        private readonly IWorkContext _workContext;
+        private readonly string _entityName;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="cacheManager">Cache manager</param>
-        /// <param name="staticCacheManager">Static cache manager</param>
-        /// <param name="categoryRepository">Category repository</param>
-        /// <param name="productCategoryRepository">ProductCategory repository</param>
-        /// <param name="productRepository">Product repository</param>
-        /// <param name="aclRepository">ACL record repository</param>
-        /// <param name="storeMappingRepository">Store mapping repository</param>
-        /// <param name="dbContext">DB context</param>
-        /// <param name="dataProvider">Data provider</param>
-        /// <param name="workContext">Work context</param>
-        /// <param name="storeContext">Store context</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        /// <param name="storeMappingService">Store mapping service</param>
-        /// <param name="aclService">ACL service</param>
-        /// <param name="commonSettings">Common settings</param>
-        /// <param name="catalogSettings">Catalog settings</param>
-        public CategoryService(ICacheManager cacheManager,
-            IStaticCacheManager staticCacheManager,
-            IRepository<Category> categoryRepository,
-            IRepository<ProductCategory> productCategoryRepository,
-            IRepository<Product> productRepository,
-            IRepository<AclRecord> aclRepository,
-            IRepository<StoreMapping> storeMappingRepository,
-            IDbContext dbContext,
-            IDataProvider dataProvider,
-            IWorkContext workContext,
-            IStoreContext storeContext,
-            IEventPublisher eventPublisher,
-            IStoreMappingService storeMappingService,
-            IAclService aclService,
+        public CategoryService(CatalogSettings catalogSettings,
             CommonSettings commonSettings,
-            CatalogSettings catalogSettings)
+            IAclService aclService,
+            ICacheManager cacheManager,
+            IDataProvider dataProvider,
+            IDbContext dbContext,
+            IEventPublisher eventPublisher,
+            ILocalizationService localizationService,
+            IRepository<AclRecord> aclRepository,
+            IRepository<Category> categoryRepository,
+            IRepository<Product> productRepository,
+            IRepository<ProductCategory> productCategoryRepository,
+            IRepository<StoreMapping> storeMappingRepository,
+            IStaticCacheManager staticCacheManager,
+            IStoreContext storeContext,
+            IStoreMappingService storeMappingService,
+            IWorkContext workContext)
         {
-            this._cacheManager = cacheManager;
-            this._staticCacheManager = staticCacheManager;
-            this._categoryRepository = categoryRepository;
-            this._productCategoryRepository = productCategoryRepository;
-            this._productRepository = productRepository;
-            this._aclRepository = aclRepository;
-            this._storeMappingRepository = storeMappingRepository;
-            this._dbContext = dbContext;
-            this._dataProvider = dataProvider;
-            this._workContext = workContext;
-            this._storeContext = storeContext;
-            this._eventPublisher = eventPublisher;
-            this._storeMappingService = storeMappingService;
-            this._aclService = aclService;
-            this._commonSettings = commonSettings;
             this._catalogSettings = catalogSettings;
+            this._commonSettings = commonSettings;
+            this._aclService = aclService;
+            this._cacheManager = cacheManager;
+            this._dataProvider = dataProvider;
+            this._dbContext = dbContext;
+            this._eventPublisher = eventPublisher;
+            this._localizationService = localizationService;
+            this._aclRepository = aclRepository;
+            this._categoryRepository = categoryRepository;
+            this._productRepository = productRepository;
+            this._productCategoryRepository = productCategoryRepository;
+            this._storeMappingRepository = storeMappingRepository;
+            this._staticCacheManager = staticCacheManager;
+            this._storeContext = storeContext;
+            this._storeMappingService = storeMappingService;
+            this._workContext = workContext;
+            this._entityName = typeof(Category).Name;
         }
 
         #endregion
@@ -148,9 +135,9 @@ namespace Nop.Services.Catalog
             if (loadCacheableCopy)
             {
                 //cacheable copy
-                var key = string.Format(NopCatalogDefaults.CategoriesAllCacheKey, 
+                var key = string.Format(NopCatalogDefaults.CategoriesAllCacheKey,
                     storeId,
-                    string.Join(",", _workContext.CurrentCustomer.GetCustomerRoleIds()), 
+                    string.Join(",", _workContext.CurrentCustomer.GetCustomerRoleIds()),
                     showHidden);
                 categories = _staticCacheManager.Get(key, () =>
                 {
@@ -167,7 +154,7 @@ namespace Nop.Services.Catalog
 
             return categories;
         }
-        
+
         /// <summary>
         /// Gets all categories
         /// </summary>
@@ -177,7 +164,7 @@ namespace Nop.Services.Catalog
         /// <param name="pageSize">Page size</param>
         /// <param name="showHidden">A value indicating whether to show hidden records</param>
         /// <returns>Categories</returns>
-        public virtual IPagedList<Category> GetAllCategories(string categoryName, int storeId = 0, 
+        public virtual IPagedList<Category> GetAllCategories(string categoryName, int storeId = 0,
             int pageIndex = 0, int pageSize = int.MaxValue, bool showHidden = false)
         {
             if (_commonSettings.UseStoredProcedureForLoadingCategories)
@@ -193,7 +180,7 @@ namespace Nop.Services.Catalog
                 var pageSizeParameter = _dataProvider.GetInt32Parameter("PageSize", pageSize);
                 //pass allowed customer role identifiers as comma-delimited string
                 var customerRoleIdsParameter = _dataProvider.GetStringParameter("CustomerRoleIds", !_catalogSettings.IgnoreAcl ? string.Join(",", _workContext.CurrentCustomer.GetCustomerRoleIds()) : string.Empty);
-                
+
                 var totalRecordsParameter = _dataProvider.GetOutputInt32Parameter("TotalRecords");
 
                 //invoke stored procedure
@@ -222,30 +209,30 @@ namespace Nop.Services.Catalog
                     //ACL (access control list)
                     var allowedCustomerRolesIds = _workContext.CurrentCustomer.GetCustomerRoleIds();
                     query = from c in query
-                        join acl in _aclRepository.Table
-                            on new { c1 = c.Id, c2 = "Category" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
-                        from acl in c_acl.DefaultIfEmpty()
-                        where !c.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
-                        select c;
+                            join acl in _aclRepository.Table
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
+                            from acl in c_acl.DefaultIfEmpty()
+                            where !c.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
+                            select c;
                 }
                 if (storeId > 0 && !_catalogSettings.IgnoreStoreLimitations)
                 {
                     //Store mapping
                     query = from c in query
-                        join sm in _storeMappingRepository.Table
-                            on new { c1 = c.Id, c2 = "Category" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
-                        from sm in c_sm.DefaultIfEmpty()
-                        where !c.LimitedToStores || storeId == sm.StoreId
-                        select c;
+                            join sm in _storeMappingRepository.Table
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
+                            from sm in c_sm.DefaultIfEmpty()
+                            where !c.LimitedToStores || storeId == sm.StoreId
+                            select c;
                 }
-                
+
                 query = query.Distinct().OrderBy(c => c.ParentCategoryId).ThenBy(c => c.DisplayOrder).ThenBy(c => c.Id);
             }
-            
+
             var unsortedCategories = query.ToList();
 
             //sort categories
-            var sortedCategories = unsortedCategories.SortCategoriesForTree();
+            var sortedCategories = this.SortCategoriesForTree(unsortedCategories);
 
             //paging
             return new PagedList<Category>(sortedCategories, pageIndex, pageSize);
@@ -256,7 +243,6 @@ namespace Nop.Services.Catalog
         /// </summary>
         /// <param name="parentCategoryId">Parent category identifier</param>
         /// <param name="showHidden">A value indicating whether to show hidden records</param>
-        /// <param name="includeAllLevels">A value indicating whether we should load all child levels</param>
         /// <returns>Categories</returns>
         public virtual IList<Category> GetAllCategoriesByParentCategoryId(int parentCategoryId,
             bool showHidden = false)
@@ -279,7 +265,7 @@ namespace Nop.Services.Catalog
                         var allowedCustomerRolesIds = _workContext.CurrentCustomer.GetCustomerRoleIds();
                         query = from c in query
                                 join acl in _aclRepository.Table
-                                on new { c1 = c.Id, c2 = "Category" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
                                 from acl in c_acl.DefaultIfEmpty()
                                 where !c.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
                                 select c;
@@ -290,7 +276,7 @@ namespace Nop.Services.Catalog
                         var currentStoreId = _storeContext.CurrentStore.Id;
                         query = from c in query
                                 join sm in _storeMappingRepository.Table
-                                on new { c1 = c.Id, c2 = "Category" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
                                 from sm in c_sm.DefaultIfEmpty()
                                 where !c.LimitedToStores || currentStoreId == sm.StoreId
                                 select c;
@@ -303,7 +289,7 @@ namespace Nop.Services.Catalog
                 return categories;
             });
         }
-        
+
         /// <summary>
         /// Gets all categories displayed on the home page
         /// </summary>
@@ -314,7 +300,7 @@ namespace Nop.Services.Catalog
             var query = from c in _categoryRepository.Table
                         orderby c.DisplayOrder, c.Id
                         where c.Published &&
-                        !c.Deleted && 
+                        !c.Deleted &&
                         c.ShowOnHomePage
                         select c;
 
@@ -369,7 +355,7 @@ namespace Nop.Services.Catalog
         {
             if (categoryId == 0)
                 return null;
-            
+
             var key = string.Format(NopCatalogDefaults.CategoriesByIdCacheKey, categoryId);
             return _cacheManager.Get(key, () => _categoryRepository.GetById(categoryId));
         }
@@ -431,7 +417,7 @@ namespace Nop.Services.Catalog
             //event notification
             _eventPublisher.EntityUpdated(category);
         }
-        
+
         /// <summary>
         /// Deletes a product category mapping
         /// </summary>
@@ -484,7 +470,7 @@ namespace Nop.Services.Catalog
                         query = from pc in query
                                 join c in _categoryRepository.Table on pc.CategoryId equals c.Id
                                 join acl in _aclRepository.Table
-                                on new { c1 = c.Id, c2 = "Category" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into c_acl
                                 from acl in c_acl.DefaultIfEmpty()
                                 where !c.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
                                 select pc;
@@ -496,7 +482,7 @@ namespace Nop.Services.Catalog
                         query = from pc in query
                                 join c in _categoryRepository.Table on pc.CategoryId equals c.Id
                                 join sm in _storeMappingRepository.Table
-                                on new { c1 = c.Id, c2 = "Category" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
+                                on new { c1 = c.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into c_sm
                                 from sm in c_sm.DefaultIfEmpty()
                                 where !c.LimitedToStores || currentStoreId == sm.StoreId
                                 select pc;
@@ -586,7 +572,7 @@ namespace Nop.Services.Catalog
         {
             if (productCategory == null)
                 throw new ArgumentNullException(nameof(productCategory));
-            
+
             _productCategoryRepository.Insert(productCategory);
 
             //cache
@@ -651,7 +637,7 @@ namespace Nop.Services.Catalog
             var query = _productCategoryRepository.Table;
 
             return query.Where(p => productIds.Contains(p.ProductId))
-                .Select(p => new {p.ProductId, p.CategoryId}).ToList()
+                .Select(p => new { p.ProductId, p.CategoryId }).ToList()
                 .GroupBy(a => a.ProductId)
                 .ToDictionary(items => items.Key, items => items.Select(a => a.CategoryId).ToArray());
         }
@@ -667,10 +653,115 @@ namespace Nop.Services.Catalog
                 return new List<Category>();
 
             var query = from p in _categoryRepository.Table
-                where categoryIds.Contains(p.Id) && !p.Deleted
-                select p;
-            
+                        where categoryIds.Contains(p.Id) && !p.Deleted
+                        select p;
+
             return query.ToList();
+        }
+
+        /// <summary>
+        /// Sort categories for tree representation
+        /// </summary>
+        /// <param name="source">Source</param>
+        /// <param name="parentId">Parent category identifier</param>
+        /// <param name="ignoreCategoriesWithoutExistingParent">A value indicating whether categories without parent category in provided category list (source) should be ignored</param>
+        /// <returns>Sorted categories</returns>
+        public virtual IList<Category> SortCategoriesForTree(IList<Category> source, int parentId = 0,
+            bool ignoreCategoriesWithoutExistingParent = false)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            var result = new List<Category>();
+
+            foreach (var cat in source.Where(c => c.ParentCategoryId == parentId).ToList())
+            {
+                result.Add(cat);
+                result.AddRange(SortCategoriesForTree(source, cat.Id, true));
+            }
+            if (!ignoreCategoriesWithoutExistingParent && result.Count != source.Count)
+            {
+                //find categories without parent in provided category source and insert them into result
+                foreach (var cat in source)
+                    if (result.FirstOrDefault(x => x.Id == cat.Id) == null)
+                        result.Add(cat);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a ProductCategory that has the specified values
+        /// </summary>
+        /// <param name="source">Source</param>
+        /// <param name="productId">Product identifier</param>
+        /// <param name="categoryId">Category identifier</param>
+        /// <returns>A ProductCategory that has the specified values; otherwise null</returns>
+        public virtual ProductCategory FindProductCategory(IList<ProductCategory> source, int productId, int categoryId)
+        {
+            foreach (var productCategory in source)
+                if (productCategory.ProductId == productId && productCategory.CategoryId == categoryId)
+                    return productCategory;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get formatted category breadcrumb 
+        /// Note: ACL and store mapping is ignored
+        /// </summary>
+        /// <param name="category">Category</param>
+        /// <param name="allCategories">All categories</param>
+        /// <param name="separator">Separator</param>
+        /// <param name="languageId">Language identifier for localization</param>
+        /// <returns>Formatted breadcrumb</returns>
+        public virtual string GetFormattedBreadCrumb(Category category, IList<Category> allCategories = null,
+            string separator = ">>", int languageId = 0)
+        {
+            var result = string.Empty;
+
+            var breadcrumb = this.GetCategoryBreadCrumb(category, allCategories, true);
+            for (var i = 0; i <= breadcrumb.Count - 1; i++)
+            {
+                var categoryName = _localizationService.GetLocalized(breadcrumb[i], x => x.Name, languageId);
+                result = string.IsNullOrEmpty(result) ? categoryName : $"{result} {separator} {categoryName}";
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get category breadcrumb 
+        /// </summary>
+        /// <param name="category">Category</param>
+        /// <param name="allCategories">All categories</param>
+        /// <param name="showHidden">A value indicating whether to load hidden records</param>
+        /// <returns>Category breadcrumb </returns>
+        public virtual IList<Category> GetCategoryBreadCrumb(Category category, IList<Category> allCategories = null, bool showHidden = false)
+        {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            var result = new List<Category>();
+
+            //used to prevent circular references
+            var alreadyProcessedCategoryIds = new List<int>();
+
+            while (category != null && //not null
+                !category.Deleted && //not deleted
+                (showHidden || category.Published) && //published
+                (showHidden || _aclService.Authorize(category)) && //ACL
+                (showHidden || _storeMappingService.Authorize(category)) && //Store mapping
+                !alreadyProcessedCategoryIds.Contains(category.Id)) //prevent circular references
+            {
+                result.Add(category);
+
+                alreadyProcessedCategoryIds.Add(category.Id);
+
+                category = allCategories != null ? allCategories.FirstOrDefault(c => c.Id == c.ParentCategoryId)
+                    : this.GetCategoryById(category.ParentCategoryId);
+            }
+            result.Reverse();
+            return result;
         }
 
         #endregion

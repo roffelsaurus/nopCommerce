@@ -195,16 +195,6 @@ namespace Nop.Services.Catalog
         public static string ProductManufacturerIdsPatternCacheKey => "Nop.totals.product.manufacturerids";
 
         /// <summary>
-        /// Gets a name of cookie to store products to compare
-        /// </summary>
-        public static string CompareProductsCookieName => ".Nop.CompareProducts";
-
-        /// <summary>
-        /// Gets a name of cookie to store recently viewed products
-        /// </summary>
-        public static string RecentlyViewedProductsCookieName => ".Nop.RecentlyViewedProducts";
-
-        /// <summary>
         /// Gets a template of product name on copying
         /// </summary>
         /// <remarks>
@@ -317,6 +307,36 @@ namespace Nop.Services.Catalog
         /// Gets a key pattern to clear cache
         /// </summary>
         public static string ProductTagPatternCacheKey => "Nop.producttag.";
+
+        #endregion
+
+        #region Review type
+
+        /// <summary>
+        /// Key for caching all review types
+        /// </summary>
+        public static string ReviewTypeAllKey => "Nop.reviewType.all";
+
+        /// <summary>
+        /// Key for caching review type
+        /// </summary>
+        /// <remarks>
+        /// {0} : review type ID
+        /// </remarks>
+        public static string ReviewTypeByIdKey => "Nop.reviewType.id-{0}";
+
+        /// <summary>
+        /// Key pattern to clear cache review types
+        /// </summary>
+        public static string ReviewTypeByPatternKey => "Nop.reviewType.";
+
+        /// <summary>
+        /// Key for caching product review and review type mapping
+        /// </summary>
+        /// <remarks>
+        /// {0} : product review ID
+        /// </remarks>
+        public static string ProductReviewReviewTypeMappingAllKey => "Nop.productReviewReviewTypeMapping.all-{0}";
 
         #endregion
 
