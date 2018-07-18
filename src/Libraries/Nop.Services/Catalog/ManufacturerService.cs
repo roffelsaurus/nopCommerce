@@ -5,9 +5,9 @@ using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Security;
 using Nop.Core.Domain.Stores;
-using Nop.Services.Customers;
 using Nop.Services.Events;
 
 namespace Nop.Services.Catalog
@@ -19,55 +19,44 @@ namespace Nop.Services.Catalog
     {
         #region Fields
 
-        private readonly IRepository<Manufacturer> _manufacturerRepository;
-        private readonly IRepository<ProductManufacturer> _productManufacturerRepository;
-        private readonly IRepository<Product> _productRepository;
-        private readonly IRepository<AclRecord> _aclRepository;
-        private readonly IRepository<StoreMapping> _storeMappingRepository;
-        private readonly IWorkContext _workContext;
-        private readonly IStoreContext _storeContext;
-        private readonly IEventPublisher _eventPublisher;
-        private readonly ICacheManager _cacheManager;
         private readonly CatalogSettings _catalogSettings;
+        private readonly ICacheManager _cacheManager;
+        private readonly IEventPublisher _eventPublisher;
+        private readonly IRepository<AclRecord> _aclRepository;
+        private readonly IRepository<Manufacturer> _manufacturerRepository;
+        private readonly IRepository<Product> _productRepository;
+        private readonly IRepository<ProductManufacturer> _productManufacturerRepository;
+        private readonly IRepository<StoreMapping> _storeMappingRepository;
+        private readonly IStoreContext _storeContext;
+        private readonly IWorkContext _workContext;
+        private readonly string _entityName;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="cacheManager">Cache manager</param>
-        /// <param name="manufacturerRepository">Category repository</param>
-        /// <param name="productManufacturerRepository">ProductCategory repository</param>
-        /// <param name="productRepository">Product repository</param>
-        /// <param name="aclRepository">ACL record repository</param>
-        /// <param name="storeMappingRepository">Store mapping repository</param>
-        /// <param name="workContext">Work context</param>
-        /// <param name="storeContext">Store context</param>
-        /// <param name="catalogSettings">Catalog settings</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        public ManufacturerService(ICacheManager cacheManager,
-            IRepository<Manufacturer> manufacturerRepository,
-            IRepository<ProductManufacturer> productManufacturerRepository,
-            IRepository<Product> productRepository,
+        public ManufacturerService(CatalogSettings catalogSettings,
+            ICacheManager cacheManager,
+            IEventPublisher eventPublisher,
             IRepository<AclRecord> aclRepository,
+            IRepository<Manufacturer> manufacturerRepository,
+            IRepository<Product> productRepository,
+            IRepository<ProductManufacturer> productManufacturerRepository,
             IRepository<StoreMapping> storeMappingRepository,
-            IWorkContext workContext,
             IStoreContext storeContext,
-            CatalogSettings catalogSettings,
-            IEventPublisher eventPublisher)
+            IWorkContext workContext)
         {
-            this._cacheManager = cacheManager;
-            this._manufacturerRepository = manufacturerRepository;
-            this._productManufacturerRepository = productManufacturerRepository;
-            this._productRepository = productRepository;
-            this._aclRepository = aclRepository;
-            this._storeMappingRepository = storeMappingRepository;
-            this._workContext = workContext;
-            this._storeContext = storeContext;
             this._catalogSettings = catalogSettings;
+            this._cacheManager = cacheManager;
             this._eventPublisher = eventPublisher;
+            this._aclRepository = aclRepository;
+            this._manufacturerRepository = manufacturerRepository;
+            this._productRepository = productRepository;
+            this._productManufacturerRepository = productManufacturerRepository;
+            this._storeMappingRepository = storeMappingRepository;
+            this._storeContext = storeContext;
+            this._workContext = workContext;
+            this._entityName = typeof(Manufacturer).Name;
         }
 
         #endregion
@@ -82,7 +71,7 @@ namespace Nop.Services.Catalog
         {
             if (manufacturer == null)
                 throw new ArgumentNullException(nameof(manufacturer));
-            
+
             manufacturer.Deleted = true;
             UpdateManufacturer(manufacturer);
 
@@ -102,7 +91,7 @@ namespace Nop.Services.Catalog
         public virtual IPagedList<Manufacturer> GetAllManufacturers(string manufacturerName = "",
             int storeId = 0,
             int pageIndex = 0,
-            int pageSize = int.MaxValue, 
+            int pageSize = int.MaxValue,
             bool showHidden = false)
         {
             var query = _manufacturerRepository.Table;
@@ -121,7 +110,7 @@ namespace Nop.Services.Catalog
                     var allowedCustomerRolesIds = _workContext.CurrentCustomer.GetCustomerRoleIds();
                     query = from m in query
                             join acl in _aclRepository.Table
-                            on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
+                            on new { c1 = m.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
                             from acl in m_acl.DefaultIfEmpty()
                             where !m.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
                             select m;
@@ -131,7 +120,7 @@ namespace Nop.Services.Catalog
                     //Store mapping
                     query = from m in query
                             join sm in _storeMappingRepository.Table
-                            on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
+                            on new { c1 = m.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
                             from sm in m_sm.DefaultIfEmpty()
                             where !m.LimitedToStores || storeId == sm.StoreId
                             select m;
@@ -152,7 +141,7 @@ namespace Nop.Services.Catalog
         {
             if (manufacturerId == 0)
                 return null;
-            
+
             var key = string.Format(NopCatalogDefaults.ManufacturersByIdCacheKey, manufacturerId);
             return _cacheManager.Get(key, () => _manufacturerRepository.GetById(manufacturerId));
         }
@@ -248,7 +237,7 @@ namespace Nop.Services.Catalog
                         query = from pm in query
                                 join m in _manufacturerRepository.Table on pm.ManufacturerId equals m.Id
                                 join acl in _aclRepository.Table
-                                on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
+                                on new { c1 = m.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
                                 from acl in m_acl.DefaultIfEmpty()
                                 where !m.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
                                 select pm;
@@ -260,7 +249,7 @@ namespace Nop.Services.Catalog
                         query = from pm in query
                                 join m in _manufacturerRepository.Table on pm.ManufacturerId equals m.Id
                                 join sm in _storeMappingRepository.Table
-                                on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
+                                on new { c1 = m.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
                                 from sm in m_sm.DefaultIfEmpty()
                                 where !m.LimitedToStores || currentStoreId == sm.StoreId
                                 select pm;
@@ -306,7 +295,7 @@ namespace Nop.Services.Catalog
                         query = from pm in query
                                 join m in _manufacturerRepository.Table on pm.ManufacturerId equals m.Id
                                 join acl in _aclRepository.Table
-                                on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
+                                on new { c1 = m.Id, c2 = _entityName } equals new { c1 = acl.EntityId, c2 = acl.EntityName } into m_acl
                                 from acl in m_acl.DefaultIfEmpty()
                                 where !m.SubjectToAcl || allowedCustomerRolesIds.Contains(acl.CustomerRoleId)
                                 select pm;
@@ -319,7 +308,7 @@ namespace Nop.Services.Catalog
                         query = from pm in query
                                 join m in _manufacturerRepository.Table on pm.ManufacturerId equals m.Id
                                 join sm in _storeMappingRepository.Table
-                                on new { c1 = m.Id, c2 = "Manufacturer" } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
+                                on new { c1 = m.Id, c2 = _entityName } equals new { c1 = sm.EntityId, c2 = sm.EntityName } into m_sm
                                 from sm in m_sm.DefaultIfEmpty()
                                 where !m.LimitedToStores || currentStoreId == sm.StoreId
                                 select pm;
@@ -332,7 +321,7 @@ namespace Nop.Services.Catalog
                 return productManufacturers;
             });
         }
-        
+
         /// <summary>
         /// Gets a product manufacturer mapping 
         /// </summary>
@@ -395,7 +384,7 @@ namespace Nop.Services.Catalog
             var query = _productManufacturerRepository.Table;
 
             return query.Where(p => productIds.Contains(p.ProductId))
-                .Select(p => new {p.ProductId, p.ManufacturerId}).ToList()
+                .Select(p => new { p.ProductId, p.ManufacturerId }).ToList()
                 .GroupBy(a => a.ProductId)
                 .ToDictionary(items => items.Key, items => items.Select(a => a.ManufacturerId).ToArray());
         }
@@ -427,6 +416,21 @@ namespace Nop.Services.Catalog
             return queryFilter.ToArray();
         }
 
+        /// <summary>
+        /// Returns a ProductManufacturer that has the specified values
+        /// </summary>
+        /// <param name="source">Source</param>
+        /// <param name="productId">Product identifier</param>
+        /// <param name="manufacturerId">Manufacturer identifier</param>
+        /// <returns>A ProductManufacturer that has the specified values; otherwise null</returns>
+        public virtual ProductManufacturer FindProductManufacturer(IList<ProductManufacturer> source, int productId, int manufacturerId)
+        {
+            foreach (var productManufacturer in source)
+                if (productManufacturer.ProductId == productId && productManufacturer.ManufacturerId == manufacturerId)
+                    return productManufacturer;
+
+            return null;
+        }
         #endregion
     }
 }

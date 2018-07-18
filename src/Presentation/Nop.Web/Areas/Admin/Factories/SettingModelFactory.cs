@@ -35,7 +35,7 @@ using Nop.Web.Areas.Admin.Models.Common;
 using Nop.Web.Areas.Admin.Models.Settings;
 using Nop.Web.Areas.Admin.Models.Stores;
 using Nop.Web.Framework.Extensions;
-using Nop.Web.Framework.Security.Captcha;
+using Nop.Web.Framework.Factories;
 
 namespace Nop.Web.Areas.Admin.Factories
 {
@@ -55,6 +55,8 @@ namespace Nop.Web.Areas.Admin.Factories
         private readonly IDateTimeHelper _dateTimeHelper;
         private readonly IFulltextService _fulltextService;
         private readonly IGdprService _gdprService;
+        private readonly ILocalizedModelFactory _localizedModelFactory;
+        private readonly IGenericAttributeService _genericAttributeService;
         private readonly ILocalizationService _localizationService;
         private readonly IMaintenanceService _maintenanceService;
         private readonly IPictureService _pictureService;
@@ -80,6 +82,8 @@ namespace Nop.Web.Areas.Admin.Factories
             IDateTimeHelper dateTimeHelper,
             IFulltextService fulltextService,
             IGdprService gdprService,
+            ILocalizedModelFactory localizedModelFactory,
+            IGenericAttributeService genericAttributeService,
             ILocalizationService localizationService,
             IMaintenanceService maintenanceService,
             IPictureService pictureService,
@@ -101,6 +105,8 @@ namespace Nop.Web.Areas.Admin.Factories
             this._dateTimeHelper = dateTimeHelper;
             this._fulltextService = fulltextService;
             this._gdprService = gdprService;
+            this._localizedModelFactory = localizedModelFactory;
+            this._genericAttributeService = genericAttributeService;
             this._localizationService = localizationService;
             this._maintenanceService = maintenanceService;
             this._pictureService = pictureService;
@@ -655,7 +661,7 @@ namespace Nop.Web.Areas.Admin.Factories
 
             //fill in additional values (not existing in the entity)
             model.ActiveStoreScopeConfiguration = storeId;
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -725,7 +731,7 @@ namespace Nop.Web.Areas.Admin.Factories
             //fill in additional values (not existing in the entity)
             model.ActiveStoreScopeConfiguration = storeId;
             model.ForumEditorValues = forumSettings.ForumEditor.ToSelectList();
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -772,7 +778,7 @@ namespace Nop.Web.Areas.Admin.Factories
 
             //fill in additional values (not existing in the entity)
             model.ActiveStoreScopeConfiguration = storeId;
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -1030,7 +1036,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     };
 
                     //fill in additional values (not existing in the entity)
-                    sortOptionModel.Name = option.GetLocalizedEnum(_localizationService, _workContext);
+                    sortOptionModel.Name = _localizationService.GetLocalizedEnum(option);
                     sortOptionModel.IsActive = !catalogSettings.ProductSortingEnumDisabled.Contains((int)option);
                     sortOptionModel.DisplayOrder = catalogSettings
                         .ProductSortingEnumDisplayOrder.TryGetValue((int)option, out var value) ? value : (int)option;
@@ -1060,7 +1066,7 @@ namespace Nop.Web.Areas.Admin.Factories
             model.ActiveStoreScopeConfiguration = storeId;
             model.PrimaryStoreCurrencyCode = _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId)?.CurrencyCode;
             model.ActivatePointsImmediately = model.ActivationDelay <= 0;
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -1151,7 +1157,7 @@ namespace Nop.Web.Areas.Admin.Factories
 
             //fill in additional values (not existing in the entity)
             model.ActiveStoreScopeConfiguration = storeId;
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -1194,7 +1200,7 @@ namespace Nop.Web.Areas.Admin.Factories
             //fill in additional values (not existing in the entity)
             model.ActiveStoreScopeConfiguration = storeId;
             model.PicturesStoredIntoDatabase = _pictureService.StoreInDb;
-            
+
             if (storeId <= 0)
                 return model;
 
@@ -1294,7 +1300,15 @@ namespace Nop.Web.Areas.Admin.Factories
             //prepare list model
             var model = new GdprConsentListModel
             {
-                Data = consentList.PaginationByRequestModel(searchModel).Select(consent => consent.ToModel<GdprConsentModel>()).ToList(),
+                Data = consentList.PaginationByRequestModel(searchModel).Select(consent =>
+                {
+                    var gdprConsentModel = consent.ToModel<GdprConsentModel>();
+                    var gdprConsent = _gdprService.GetConsentById(gdprConsentModel.Id);
+                    gdprConsentModel.Message = _localizationService.GetLocalized(gdprConsent, entity => entity.Message);
+                    gdprConsentModel.RequiredMessage = _localizationService.GetLocalized(gdprConsent, entity => entity.RequiredMessage);
+
+                    return gdprConsentModel;
+                }),
                 Total = consentList.Count
             };
 
@@ -1310,13 +1324,28 @@ namespace Nop.Web.Areas.Admin.Factories
         /// <returns>GDPR consent model</returns>
         public virtual GdprConsentModel PrepareGdprConsentModel(GdprConsentModel model, GdprConsent gdprConsent, bool excludeProperties = false)
         {
+            Action<GdprConsentLocalizedModel, int> localizedModelConfiguration = null;
+
             //fill in model values from the entity
             if (gdprConsent != null)
+            {
                 model = model ?? gdprConsent.ToModel<GdprConsentModel>();
+
+                //define localized model configuration action
+                localizedModelConfiguration = (locale, languageId) =>
+                {
+                    locale.Message = _localizationService.GetLocalized(gdprConsent, entity => entity.Message, languageId, false, false);
+                    locale.RequiredMessage = _localizationService.GetLocalized(gdprConsent, entity => entity.RequiredMessage, languageId, false, false);
+                };
+            }
 
             //set default values for the new model
             if (gdprConsent == null)
                 model.DisplayOrder = 1;
+
+            //prepare localized models
+            if (!excludeProperties)
+                model.Locales = _localizedModelFactory.PrepareLocalizedModels(localizedModelConfiguration);
 
             return model;
         }
@@ -1455,7 +1484,7 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new SettingModeModel
             {
                 ModeName = modeName,
-                Enabled = _workContext.CurrentCustomer.GetAttribute<bool>(modeName)
+                Enabled = _genericAttributeService.GetAttribute<bool>(_workContext.CurrentCustomer, modeName)
             };
 
             return model;

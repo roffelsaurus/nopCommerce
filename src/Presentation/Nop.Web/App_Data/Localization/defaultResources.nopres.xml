@@ -4104,9 +4104,6 @@
   <LocaleResource Name="Admin.Common.DeleteConfirmation">
     <Value>Are you sure you want to delete this item?</Value>
   </LocaleResource>
-  <LocaleResource Name="Admin.Common.DeleteConfirmation.Selected">
-    <Value>Are you sure you want to delete selected items?</Value>
-  </LocaleResource>
   <LocaleResource Name="Admin.Common.DeleteConfirmationParam">
     <Value>Are you sure you want to delete "{0}"?</Value>
   </LocaleResource>
@@ -4451,6 +4448,9 @@
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.Added">
     <Value>The new currency has been added successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Currencies.AdditionalConfirm">
+    <Value><![CDATA[<p>WARNING. It is not recommended to do this on live sites because: </p><ol><li>Product prices, order totals, shipping rates, etc are not automatically converted to a new currency</li><li>Currency exhange rates are not automatically updated</li></ol>]]></Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.AddNew">
     <Value>Add a new currency</Value>
@@ -6115,10 +6115,10 @@
     <Value>A value indicating whether to show customers join date.</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.ShowCustomersLocation">
-    <Value>Show customers' location</Value>
+    <Value>Show customer's location</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.ShowCustomersLocation.Hint">
-    <Value>A value indicating whether customers' location is shown.</Value>
+    <Value>A value indicating whether customer's location is shown.</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.StateProvinceEnabled">
     <Value>'State/province' enabled</Value>
@@ -8436,6 +8436,9 @@
   <LocaleResource Name="Admin.Configuration.Shipping.Measures">
     <Value>Measures</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Shipping.Measures.AdditionalConfirm">
+    <Value><![CDATA[<p>WARNING. It is not recommended to do this on live sites because: </p><ol><li>Other rates have to be updated manually</li><li>You have to ensure that each product has a valid measure (dimension and weights) - they are not adjusted automatically</li></ol>]]></Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Shipping.Measures.Dimensions">
     <Value>Dimensions</Value>
   </LocaleResource>
@@ -10264,7 +10267,7 @@
     <Value>You're not allowed to delete administrators. Only administrators can do it.</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Customers.Customers.ShoppingCartAndWishlist">
-    <Value>Current shopping cart</Value>
+    <Value>Current shopping cart and wishlist</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Customers.Customers.Deleted">
     <Value>The customer has been deleted successfully.</Value>
@@ -11130,8 +11133,8 @@
   <LocaleResource Name="Admin.Orders.BackToList">
     <Value>back to order list</Value>
   </LocaleResource>
-  <LocaleResource Name="Admin.Orders.BillingInfo">
-    <Value>Billing info</Value>
+  <LocaleResource Name="Admin.Orders.BillingShippingInfo">
+    <Value>Billing &amp; shipping</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Orders.EditOrderDetails">
     <Value>Edit order details</Value>
@@ -12041,9 +12044,6 @@
   </LocaleResource>
   <LocaleResource Name="Admin.Orders.Shipments.ViewDetails">
     <Value>View shipment details</Value>
-  </LocaleResource>
-  <LocaleResource Name="Admin.Orders.ShippingInfo">
-    <Value>Shipping info</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Orders.ShippingInfo.NotRequired">
     <Value>Shipping not required</Value>
@@ -15128,6 +15128,12 @@
   </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Orders.ReturnRequestStatus.ReturnAuthorized">
     <Value>Return authorized</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Orders.ShoppingCartType.ShoppingCart">
+    <Value>Shopping cart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Orders.ShoppingCartType.Wishlist">
+    <Value>Wishlist</Value>
   </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Payments.PaymentStatus.Authorized">
     <Value>Authorized</Value>

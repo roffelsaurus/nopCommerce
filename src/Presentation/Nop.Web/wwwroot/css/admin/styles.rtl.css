@@ -1,4 +1,7 @@
 ﻿/* COMMON */
+.content{
+		padding-bottom: 55px;
+}
 ul, ol {
     margin-bottom: 0;
 }
@@ -547,9 +550,6 @@ td.k-state-focused.k-state-selected {
     border-right: none;
     font-weight: bold;
     padding: 10px 8px;
-}
-.k-grid-header .k-header:first-child {
-    border-left: none;
 }
 .k-grid.k-widget {
     overflow-x: auto;

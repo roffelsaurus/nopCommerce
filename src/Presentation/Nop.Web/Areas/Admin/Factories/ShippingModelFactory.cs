@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
@@ -30,10 +29,9 @@ namespace Nop.Web.Areas.Admin.Factories
         private readonly IBaseAdminModelFactory _baseAdminModelFactory;
         private readonly ICountryService _countryService;
         private readonly IDateRangeService _dateRangeService;
+        private readonly ILocalizationService _localizationService;
         private readonly ILocalizedModelFactory _localizedModelFactory;
         private readonly IShippingService _shippingService;
-        private readonly IWebHelper _webHelper;
-        private readonly ShippingSettings _shippingSettings;
 
         #endregion
 
@@ -43,19 +41,17 @@ namespace Nop.Web.Areas.Admin.Factories
             IBaseAdminModelFactory baseAdminModelFactory,
             ICountryService countryService,
             IDateRangeService dateRangeService,
+            ILocalizationService localizationService,
             ILocalizedModelFactory localizedModelFactory,
-            IShippingService shippingService,
-            IWebHelper webHelper,
-            ShippingSettings shippingSettings)
+            IShippingService shippingService)
         {
             this._addressService = addressService;
             this._baseAdminModelFactory = baseAdminModelFactory;
             this._countryService = countryService;
             this._dateRangeService = dateRangeService;
+            this._localizationService = localizationService;
             this._localizedModelFactory = localizedModelFactory;
             this._shippingService = shippingService;
-            this._webHelper = webHelper;
-            this._shippingSettings = shippingSettings;
         }
 
         #endregion
@@ -164,9 +160,9 @@ namespace Nop.Web.Areas.Admin.Factories
                     var shippingProviderModel = provider.ToPluginModel<ShippingProviderModel>();
 
                     //fill in additional values (not existing in the entity)
-                    shippingProviderModel.IsActive = provider.IsShippingRateComputationMethodActive(_shippingSettings);
+                    shippingProviderModel.IsActive = _shippingService.IsShippingRateComputationMethodActive(provider);
                     shippingProviderModel.ConfigurationUrl = provider.GetConfigurationPageUrl();
-                    shippingProviderModel.LogoUrl = provider.PluginDescriptor.GetLogoUrl(_webHelper);
+                    shippingProviderModel.LogoUrl = PluginManager.GetLogoUrl(provider.PluginDescriptor);
 
                     return shippingProviderModel;
                 }),
@@ -214,9 +210,9 @@ namespace Nop.Web.Areas.Admin.Factories
                     var pickupPointProviderModel = provider.ToPluginModel<PickupPointProviderModel>();
 
                     //fill in additional values (not existing in the entity)
-                    pickupPointProviderModel.IsActive = provider.IsPickupPointProviderActive(_shippingSettings);
+                    pickupPointProviderModel.IsActive = _shippingService.IsPickupPointProviderActive(provider);
                     pickupPointProviderModel.ConfigurationUrl = provider.GetConfigurationPageUrl();
-                    pickupPointProviderModel.LogoUrl = provider.PluginDescriptor.GetLogoUrl(_webHelper);
+                    pickupPointProviderModel.LogoUrl = PluginManager.GetLogoUrl(provider.PluginDescriptor);
 
                     return pickupPointProviderModel;
                 }),
@@ -286,8 +282,8 @@ namespace Nop.Web.Areas.Admin.Factories
                 //define localized model configuration action
                 localizedModelConfiguration = (locale, languageId) =>
                 {
-                    locale.Name = shippingMethod.GetLocalized(entity => entity.Name, languageId, false, false);
-                    locale.Description = shippingMethod.GetLocalized(entity => entity.Description, languageId, false, false);
+                    locale.Name = _localizationService.GetLocalized(shippingMethod, entity => entity.Name, languageId, false, false);
+                    locale.Description = _localizationService.GetLocalized(shippingMethod, entity => entity.Description, languageId, false, false);
                 };
             }
 
@@ -358,7 +354,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 //define localized model configuration action
                 localizedModelConfiguration = (locale, languageId) =>
                 {
-                    locale.Name = deliveryDate.GetLocalized(entity => entity.Name, languageId, false, false);
+                    locale.Name = _localizationService.GetLocalized(deliveryDate, entity => entity.Name, languageId, false, false);
                 };
             }
 
@@ -414,7 +410,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 //define localized model configuration action
                 localizedModelConfiguration = (locale, languageId) =>
                 {
-                    locale.Name = productAvailabilityRange.GetLocalized(entity => entity.Name, languageId, false, false);
+                    locale.Name = _localizationService.GetLocalized(productAvailabilityRange, entity => entity.Name, languageId, false, false);
                 };
             }
 
@@ -519,7 +515,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     if (!model.Restricted.ContainsKey(country.Id))
                         model.Restricted[country.Id] = new Dictionary<int, bool>();
 
-                    model.Restricted[country.Id][shippingMethod.Id] = shippingMethod.CountryRestrictionExists(country.Id);
+                    model.Restricted[country.Id][shippingMethod.Id] = _shippingService.CountryRestrictionExists(shippingMethod, country.Id);
                 }
             }
 

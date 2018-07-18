@@ -18,52 +18,49 @@ namespace Nop.Services.Catalog
     /// </summary>
     public partial class ProductAttributeFormatter : IProductAttributeFormatter
     {
-        private readonly IWorkContext _workContext;
-        private readonly IProductAttributeParser _productAttributeParser;
+        #region Fields
+
         private readonly ICurrencyService _currencyService;
-        private readonly ILocalizationService _localizationService;
-        private readonly ITaxService _taxService;
-        private readonly IPriceFormatter _priceFormatter;
         private readonly IDownloadService _downloadService;
-        private readonly IWebHelper _webHelper;
+        private readonly ILocalizationService _localizationService;
         private readonly IPriceCalculationService _priceCalculationService;
+        private readonly IPriceFormatter _priceFormatter;
+        private readonly IProductAttributeParser _productAttributeParser;
+        private readonly ITaxService _taxService;
+        private readonly IWebHelper _webHelper;
+        private readonly IWorkContext _workContext;
         private readonly ShoppingCartSettings _shoppingCartSettings;
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="workContext">Work context</param>
-        /// <param name="productAttributeParser">Product attribute parser</param>
-        /// <param name="currencyService">Currency service</param>
-        /// <param name="localizationService">Localization service</param>
-        /// <param name="taxService">Tax service</param>
-        /// <param name="priceFormatter"> Price formatter</param>
-        /// <param name="downloadService">Download service</param>
-        /// <param name="webHelper">Web helper</param>
-        /// <param name="priceCalculationService">Price calculation service</param>
-        /// <param name="shoppingCartSettings">Shopping cart settings</param>
-        public ProductAttributeFormatter(IWorkContext workContext,
-            IProductAttributeParser productAttributeParser,
-            ICurrencyService currencyService,
-            ILocalizationService localizationService,
-            ITaxService taxService,
-            IPriceFormatter priceFormatter,
+        #endregion
+
+        #region Ctor
+
+        public ProductAttributeFormatter(ICurrencyService currencyService,
             IDownloadService downloadService,
-            IWebHelper webHelper,
+            ILocalizationService localizationService,
             IPriceCalculationService priceCalculationService,
+            IPriceFormatter priceFormatter,
+            IProductAttributeParser productAttributeParser,
+            ITaxService taxService,
+            IWebHelper webHelper,
+            IWorkContext workContext,
             ShoppingCartSettings shoppingCartSettings)
         {
-            this._workContext = workContext;
-            this._productAttributeParser = productAttributeParser;
             this._currencyService = currencyService;
-            this._localizationService = localizationService;
-            this._taxService = taxService;
-            this._priceFormatter = priceFormatter;
             this._downloadService = downloadService;
-            this._webHelper = webHelper;
+            this._localizationService = localizationService;
             this._priceCalculationService = priceCalculationService;
+            this._priceFormatter = priceFormatter;
+            this._productAttributeParser = productAttributeParser;
+            this._taxService = taxService;
+            this._webHelper = webHelper;
+            this._workContext = workContext;
             this._shoppingCartSettings = shoppingCartSettings;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Formats attributes
@@ -111,7 +108,7 @@ namespace Nop.Services.Catalog
                             if (attribute.AttributeControlType == AttributeControlType.MultilineTextbox)
                             {
                                 //multiline textbox
-                                var attributeName = attribute.ProductAttribute.GetLocalized(a => a.Name, _workContext.WorkingLanguage.Id);
+                                var attributeName = _localizationService.GetLocalized(attribute.ProductAttribute, a => a.Name, _workContext.WorkingLanguage.Id);
 
                                 //encode (if required)
                                 if (htmlEncode)
@@ -137,7 +134,7 @@ namespace Nop.Services.Catalog
                                     var attributeText = allowHyperlinks ? $"<a href=\"{_webHelper.GetStoreLocation(false)}download/getfileupload/?downloadId={download.DownloadGuid}\" class=\"fileuploadattribute\">{fileName}</a>"
                                         : fileName;
 
-                                    var attributeName = attribute.ProductAttribute.GetLocalized(a => a.Name, _workContext.WorkingLanguage.Id);
+                                    var attributeName = _localizationService.GetLocalized(attribute.ProductAttribute, a => a.Name, _workContext.WorkingLanguage.Id);
 
                                     //encode (if required)
                                     if (htmlEncode)
@@ -149,7 +146,7 @@ namespace Nop.Services.Catalog
                             else
                             {
                                 //other attributes (textbox, datepicker)
-                                formattedAttribute = $"{attribute.ProductAttribute.GetLocalized(a => a.Name, _workContext.WorkingLanguage.Id)}: {value}";
+                                formattedAttribute = $"{_localizationService.GetLocalized(attribute.ProductAttribute, a => a.Name, _workContext.WorkingLanguage.Id)}: {value}";
 
                                 //encode (if required)
                                 if (htmlEncode)
@@ -169,7 +166,7 @@ namespace Nop.Services.Catalog
                     {
                         foreach (var attributeValue in _productAttributeParser.ParseProductAttributeValues(attributesXml, attribute.Id))
                         {
-                            var formattedAttribute = $"{attribute.ProductAttribute.GetLocalized(a => a.Name, _workContext.WorkingLanguage.Id)}: {attributeValue.GetLocalized(a => a.Name, _workContext.WorkingLanguage.Id)}";
+                            var formattedAttribute = $"{_localizationService.GetLocalized(attribute.ProductAttribute, a => a.Name, _workContext.WorkingLanguage.Id)}: {_localizationService.GetLocalized(attributeValue, a => a.Name, _workContext.WorkingLanguage.Id)}";
 
                             if (renderPrices)
                             {
@@ -250,5 +247,7 @@ namespace Nop.Services.Catalog
             }
             return result.ToString();
         }
+
+        #endregion
     }
 }
