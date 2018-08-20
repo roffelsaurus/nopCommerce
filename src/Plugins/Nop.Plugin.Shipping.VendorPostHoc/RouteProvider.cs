@@ -12,8 +12,10 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         /// <param name="routeBuilder">Route builder</param>
         public void RegisterRoutes(IRouteBuilder routeBuilder)
         {
-            routeBuilder.MapRoute("Plugin.Payments.PayPalStandard.PDTHandler", "Admin/PaymentPayPalStandard/PDTHandler",
-                 new { controller = "PaymentPayPalStandard", action = "PDTHandler" });
+            routeBuilder.MapRoute("VendorEditOrderTotals", "Admin/Order/Edit/{id}",
+    new { controller = "VendorTransparentOrder", action = "EditOrderTotals" });
+            //routeBuilder.MapRoute("Plugin.Payments.PayPalStandard.PDTHandler", "Admin/PaymentPayPalStandard/PDTHandler",
+            //     new { controller = "PaymentPayPalStandard", action = "PDTHandler" });
 
 //namespace Nop.Plugin.Misc.MyPlugin.Filters
 //    {
@@ -63,7 +65,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         /// </summary>
         public int Priority
         {
-            get { return -1; }
+            get { return 100; }
         }
     }
 }

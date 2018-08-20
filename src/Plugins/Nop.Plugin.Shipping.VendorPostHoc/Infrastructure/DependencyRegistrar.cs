@@ -34,7 +34,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Infrastructure
             //    .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_shipping_weight_total_zip"))
             //    .InstancePerLifetimeScope();
             builder.RegisterType<VendorTransparentOrderModelFactory>().As<IOrderModelFactory>().InstancePerLifetimeScope();
-
         }
 
         /// <summary>
