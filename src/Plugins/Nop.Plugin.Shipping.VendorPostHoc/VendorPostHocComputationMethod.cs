@@ -1,14 +1,16 @@
 ﻿using Nop.Core;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
+using Nop.Services.Cms;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
+using Nop.Web.Framework.Infrastructure;
 using System;
 using System.Collections.Generic;
 
 namespace Nop.Plugin.Shipping.VendorPostHoc
 {
-    public class VendorPostHocComputationMethod : BasePlugin, IShippingRateComputationMethod
+    public class VendorPostHocComputationMethod : BasePlugin, IShippingRateComputationMethod, IWidgetPlugin
     {
         private readonly IWebHelper _webHelper;
 
@@ -43,6 +45,24 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
                       }
                   }
             };
+        }
+
+        public IList<string> GetWidgetZones()
+        {
+            return new List<string>()
+            {
+                AdminWidgetZones.OrderDetailsInfoTop
+            };
+        }
+
+        public string GetWidgetViewComponentName(string widgetZone)
+        {
+            switch (widgetZone)
+            {
+                case string s when s.Equals(AdminWidgetZones.OrderDetailsInfoTop): return "WidgetsVendorOrderInfo";
+                default:
+                    return null;
+            }
         }
     }
 }

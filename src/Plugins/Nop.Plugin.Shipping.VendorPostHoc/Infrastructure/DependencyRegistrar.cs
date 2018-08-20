@@ -5,7 +5,6 @@ using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Data;
-using Nop.Plugin.Shipping.VendorPostHoc.Factories;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Framework.Infrastructure.Extensions;
 
@@ -33,7 +32,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Infrastructure
             //builder.RegisterType<EfRepository<ShippingByWeightByTotalRecord>>().As<IRepository<ShippingByWeightByTotalRecord>>()
             //    .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_shipping_weight_total_zip"))
             //    .InstancePerLifetimeScope();
-            builder.RegisterType<VendorTransparentOrderModelFactory>().As<IOrderModelFactory>().InstancePerLifetimeScope();
+           // builder.RegisterType<VendorTransparentOrderModelFactory>().As<IOrderModelFactory>().InstancePerLifetimeScope();
         }
 
         /// <summary>

@@ -19,6 +19,7 @@
    <None Remove="plugin.json" />
    <None Remove="Views\Configure.cshtml" />
    <None Remove="Views\_ViewImports.cshtml" />
+   <None Remove="Views\VendorOrderInfo.cshtml" />
  </ItemGroup>
  <ItemGroup>
    <Content Include="plugin.json">
@@ -28,6 +29,9 @@
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </Content>
    <Content Include="Views\_ViewImports.cshtml">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </Content>
+   <Content Include="Views\VendorOrderInfo.cshtml">
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </Content>
  </ItemGroup>
