@@ -257,7 +257,10 @@ namespace Nop.Services.Blogs
             if (blogPost == null)
                 throw new ArgumentNullException(nameof(blogPost));
 
-            var tags = blogPost.Tags.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
+            if (blogPost.Tags == null)
+                return new List<string>();
+
+            var tags = blogPost.Tags.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(tag => tag?.Trim())
                 .Where(tag => !string.IsNullOrEmpty(tag)).ToList();
 
@@ -365,6 +368,7 @@ namespace Nop.Services.Blogs
                 if (comment != null)
                     sortedComments.Add(comment);
             }
+
             return sortedComments;
         }
 

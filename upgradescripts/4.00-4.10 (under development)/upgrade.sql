@@ -2006,11 +2006,20 @@ set @resources='
   <LocaleResource Name="Admin.Configuration.Settings.CustomerUser.ShowCustomersLocation.Hint">
     <Value>A value indicating whether customer''s location is shown.</Value>
   </LocaleResource>  
+  <LocaleResource Name="Account.UserAgreement">
+    <Value>User agreement</Value>
+  </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Orders.ShoppingCartType.ShoppingCart">
     <Value>Shopping Cart</Value>
   </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Orders.ShoppingCartType.Wishlist">
     <Value>Wishlist</Value>
+  </LocaleResource> 
+  <LocaleResource Name="Admin.SEO.SeName.MaxLengthValidation">
+    <Value>Max length of search name is {0} chars</Value>
+  </LocaleResource>   
+  <LocaleResource Name="Admin.Orders.OrderNotes.Fields.Note.Validation">
+    <Value>Order note can not be empty.</Value>
   </LocaleResource>  
 </Language>
 '
