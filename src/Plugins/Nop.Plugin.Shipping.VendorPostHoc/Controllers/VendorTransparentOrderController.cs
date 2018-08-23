@@ -56,15 +56,9 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _allowedTotalChange = 1.15m;
         }
 
-        /// <summary>
-        /// Overrides default controller action, allowing vendors to save order totals(with caveats).
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost, ActionName("Edit")]
-        [FormValueRequired("btnSaveOrderTotals")]
-        public IActionResult EditOrderTotals(int id, OrderModel model)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditOrderShipping(int id, OrderModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
