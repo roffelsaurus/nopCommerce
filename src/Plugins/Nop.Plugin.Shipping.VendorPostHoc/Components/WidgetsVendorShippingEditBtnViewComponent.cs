@@ -7,13 +7,13 @@ using System.Text;
 
 namespace Nop.Plugin.Shipping.VendorPostHoc.Components
 {
-    [ViewComponent(Name = PluginWidgets.VendorOrderInfo)]
-    public class WidgetsVendorOrderInfoViewComponent : NopViewComponent
+    [ViewComponent(Name = PluginWidgets.VendorShippingEditBtn)]
+    public class WidgetsVendorShippingEditBtnViewComponent : NopViewComponent
     {
         public IViewComponentResult Invoke(string widgetZone, object additionalData)
         {
             var ordermodel = additionalData as OrderModel;
-            return View("~/Plugins/Shipping.VendorPostHoc/Views/VendorOrderInfo.cshtml", ordermodel);
+            return View("~/Plugins/Shipping.VendorPostHoc/Views/VendorShippingEditBtn.cshtml", ordermodel);
         }
     }
 }

@@ -63,44 +63,49 @@
             </div>
             <div class="col-md-7">
                 <div class="row">
-                    <form asp-area="Admin" asp-controller="VendorTransparentOrder" asp-action="EditOrderShipping" asp-route-id="@Model.Id" method="post">
-                            <input asp-for="OrderShippingExclTax" />
-                            <button type="submit" class="btn btn-primary">@T("Admin.Orders.Fields.SaveOrderTotals")</button>
-                            <strong>@T("Admin.Orders.Fields.OrderShippingExclTax")</strong>
-                    </form>
-                </div>
-            </div>
-        </div>
-        @*<div class="form-group">
-            <div class="col-md-9 col-md-offset-3">
-                <button type="submit" name="btnEditOrderTotals" onclick="toggleOrderTotals(true);return false;" id="btnEditOrderTotals" class="btn btn-primary">
-                    @T("Admin.Orders.Fields.EditOrderTotals")
-                </button>
-
-                <button type="submit" name="btnSaveOrderTotals" id="btnSaveOrderTotals" class="btn btn-primary">
-                    @T("Admin.Orders.Fields.SaveOrderTotals")
-                </button>
-                <nop-action-confirmation asp-button-id="btnSaveOrderTotals" />
-
-                <button type="submit" name="btnCancelOrderTotals" onclick="toggleOrderTotals(false);return false;" id="btnCancelOrderTotals" class="btn bg-teal">
-                    @T("Admin.Common.Cancel")
-                </button>
-            </div>
-        </div>
-
-
-        <div id="trEditOrderTotals">
-            <div class="form-group">
-                <div class="col-md-3">
-                    <nop-label asp-for="OrderShippingInclTaxValue" />
-                </div>
-                <div class="col-md-9">
-                    <div class="pull-left">
-                        @T("Admin.Orders.Fields.Edit.ExclTax")
-                        <nop-editor asp-for="OrderShippingExclTaxValue" />
+                    <div class="col-md-10">
+                        <div class="form-text-row">
+                            @Model.OrderShippingExclTax <strong>@T("Admin.Orders.Fields.OrderShippingExclTax")</strong>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>*@
+        </div>
+        @*
+
+
+
+
+                <div class="form-group">
+                <div class="col-md-9 col-md-offset-3">
+                    <button type="submit" name="btnEditOrderTotals" onclick="toggleOrderTotals(true);return false;" id="btnEditOrderTotals" class="btn btn-primary">
+                        @T("Admin.Orders.Fields.EditOrderTotals")
+                    </button>
+
+                    <button type="submit" name="btnSaveOrderTotals" id="btnSaveOrderTotals" class="btn btn-primary">
+                        @T("Admin.Orders.Fields.SaveOrderTotals")
+                    </button>
+                    <nop-action-confirmation asp-button-id="btnSaveOrderTotals" />
+
+                    <button type="submit" name="btnCancelOrderTotals" onclick="toggleOrderTotals(false);return false;" id="btnCancelOrderTotals" class="btn bg-teal">
+                        @T("Admin.Common.Cancel")
+                    </button>
+                </div>
+            </div>
+
+
+            <div id="trEditOrderTotals">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        <nop-label asp-for="OrderShippingInclTaxValue" />
+                    </div>
+                    <div class="col-md-9">
+                        <div class="pull-left">
+                            @T("Admin.Orders.Fields.Edit.ExclTax")
+                            <nop-editor asp-for="OrderShippingExclTaxValue" />
+                        </div>
+                    </div>
+                </div>
+            </div>*@
     </div>
 </div>

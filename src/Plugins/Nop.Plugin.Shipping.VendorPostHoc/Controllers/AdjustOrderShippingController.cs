@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
+using Nop.Plugin.Shipping.VendorPostHoc.Models;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.ExportImport;
@@ -27,7 +28,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
 {
     [AuthorizeAdmin]
     [Area(AreaNames.Admin)]
-    public class VendorTransparentOrderController : BasePluginController
+    public class AdjustOrderShippingController : BasePluginController
     {
         private readonly IOrderService _orderService;
         private readonly IPermissionService _permissionService;
@@ -39,7 +40,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         private readonly decimal _allowedTotalChange;
 
 
-        public VendorTransparentOrderController(IOrderService orderService,
+        public AdjustOrderShippingController(IOrderService orderService,
             IPermissionService permissionService,
             IOrderModelFactory orderModelFactory,
             IWorkContext workContext,
@@ -56,9 +57,25 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _allowedTotalChange = 1.15m;
         }
 
+        public IActionResult AdjustOrderShipping(int id)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            //try to get an order with the specified id
+            var order = _orderService.GetOrderById(id);
+            if (order == null || order.Deleted)
+                return RedirectToAction("Edit", "Order", new { id });
+
+            //prepare model
+            var model = new AdjustOrderShippingModel(order); // _orderModelFactory.PrepareOrderModel(null, order);
+
+            return View("~/Plugins/Shipping.VendorPostHoc/Views/AdjustOrderShipping.cshtml", model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditOrderShipping(int id, OrderModel model)
+        public IActionResult AdjustOrderShipping(int id, AdjustOrderShippingModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
@@ -67,29 +84,12 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             var order = _orderService.GetOrderById(id);
             if (order == null)
                 return RedirectToAction("List");
-            
+
             // vendors can only edit shipping and it is subject to validation.
-            if (_workContext.CurrentVendor != null
-                && OrderShippingChangeValidation(order.OrderTotal,order.OrderShippingExclTax,model.OrderShippingExclTaxValue))
-            {
-                order.OrderShippingExclTax = model.OrderShippingExclTaxValue;
-            }
-            else
-            {
-                order.OrderSubtotalInclTax = model.OrderSubtotalInclTaxValue;
-                order.OrderSubtotalExclTax = model.OrderSubtotalExclTaxValue;
-                order.OrderSubTotalDiscountInclTax = model.OrderSubTotalDiscountInclTaxValue;
-                order.OrderSubTotalDiscountExclTax = model.OrderSubTotalDiscountExclTaxValue;
-                order.OrderShippingInclTax = model.OrderShippingInclTaxValue;
-                order.OrderShippingExclTax = model.OrderShippingExclTaxValue;
-                order.PaymentMethodAdditionalFeeInclTax = model.PaymentMethodAdditionalFeeInclTaxValue;
-                order.PaymentMethodAdditionalFeeExclTax = model.PaymentMethodAdditionalFeeExclTaxValue;
-                order.TaxRates = model.TaxRatesValue;
-                order.OrderTax = model.TaxValue;
-                order.OrderDiscount = model.OrderTotalDiscountValue;
-                order.OrderTotal = model.OrderTotalValue;
-            }
-            
+            order.OrderTotal -= order.OrderShippingExclTax;
+            order.OrderShippingExclTax = model.OrderShippingExclTaxValue;
+            order.OrderShippingInclTax = order.OrderShippingExclTax;
+
             _orderService.UpdateOrder(order);
 
             //add a note
@@ -102,13 +102,10 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _orderService.UpdateOrder(order);
             LogEditOrder(order.Id);
 
-            //prepare model
-            model = _orderModelFactory.PrepareOrderModel(model, order);
-
-            return View(model);
+            return RedirectToAction("Edit", "Order", new { id });
         }
 
-        protected virtual void LogEditOrder(int orderId)
+        protected void LogEditOrder(int orderId)
         {
             var order = _orderService.GetOrderById(orderId);
 

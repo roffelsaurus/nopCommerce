@@ -1,0 +1,57 @@
+@model AdjustOrderShippingModel
+
+@using  Nop.Plugin.Shipping.VendorPostHoc.Models;
+
+@{
+    //page title
+    ViewBag.Title = T("Plugin.Shipping.VendorPostHoc.AdjustShipping").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Orders");
+}
+
+<form asp-area="Admin" asp-controller="AdjustOrderShipping" asp-action="AdjustOrderShipping" method="post" id="order-form">
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Plugin.Shipping.VendorPostHoc.AdjustShipping") - @Model.CustomOrderNumber
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="List" asp-controller="Order">@T("Admin.Common.BackToList")</a>
+            </small>
+        </h1>
+    </div>
+    <div asp-validation-summary="All"></div>
+
+    <div class="content">
+        <div class="form-horizontal">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="OrderShippingExclTaxValue" />
+                        </div>
+                        <div class="col-md-9">
+                            <div class="pull-left">
+                                @T("Admin.Orders.Fields.Edit.ExclTax")
+                                <nop-editor asp-for="OrderShippingExclTaxValue" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <button type="submit" name="btnSaveAdjustShipping" id="btnSaveAdjustShipping" class="btn bg-yellow">
+                                <i class="fa fa-save"></i>
+                                @T("Admin.Common.Save")
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="Edit" asp-controller="Order" asp-route-id="@Model.Id" class="btn bg-red">
+                                <i class="fa fa-cancel"></i>
+                                @T("Admin.Common.Cancel")
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

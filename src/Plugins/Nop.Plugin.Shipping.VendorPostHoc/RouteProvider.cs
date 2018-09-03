@@ -12,8 +12,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         /// <param name="routeBuilder">Route builder</param>
         public void RegisterRoutes(IRouteBuilder routeBuilder)
         {
-            routeBuilder.MapRoute("VendorEditOrderShipping", "Admin/VendorTransparentOrder/EditOrderShipping/{id}",
-            new { controller = "VendorTransparentOrder", action = "EditOrderShipping" });
+            //routeBuilder.MapRoute("Plugin.Shipping.VendorPostHoc.AdjustOrderShipping", "Admin/Order/AdjustOrderShipping/{id}",
+            //new { controller = "AdjustOrderShipping", action = "AdjustOrderShipping" });
             //routeBuilder.MapRoute("Plugin.Payments.PayPalStandard.PDTHandler", "Admin/PaymentPayPalStandard/PDTHandler",
             //     new { controller = "PaymentPayPalStandard", action = "PDTHandler" });
 
