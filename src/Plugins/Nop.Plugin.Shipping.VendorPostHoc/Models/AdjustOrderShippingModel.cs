@@ -14,6 +14,13 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Models
 
         [NopResourceDisplayName("Admin.Orders.Fields.Edit.OrderShipping")]
         public decimal OrderShippingExclTaxValue { get; set; }
+        
+        public string Message { get; set; }
+
+        public AdjustOrderShippingModel()
+        {
+
+        }
 
         public AdjustOrderShippingModel(Order order)
         {

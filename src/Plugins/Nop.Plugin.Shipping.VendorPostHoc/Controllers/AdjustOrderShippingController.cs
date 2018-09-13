@@ -20,14 +20,19 @@ using Nop.Web.Areas.Admin.Models.Orders;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Mvc.Filters;
+using Nop.Web.Framework.Security;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
 {
-    [AuthorizeAdmin]
     [Area(AreaNames.Admin)]
+    [HttpsRequirement(SslRequirement.Yes)]
+    [AdminAntiForgery]
+    [ValidateIpAddress]
+    [AuthorizeAdmin]
+    [ValidateVendor]
     public class AdjustOrderShippingController : BasePluginController
     {
         private readonly IOrderService _orderService;
@@ -36,7 +41,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         private readonly IWorkContext _workContext;
         private readonly ICustomerActivityService _customerActivityService;
         private readonly ILocalizationService _localizationService;
-
+        private readonly ILanguageService _languageService;
         private readonly decimal _allowedTotalChange;
 
 
@@ -45,7 +50,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             IOrderModelFactory orderModelFactory,
             IWorkContext workContext,
             ICustomerActivityService customerActivityService,
-            ILocalizationService localizationService)//IAddressAttributeParser addressAttributeParser, IAddressService addressService, ICustomerActivityService customerActivityService, IDateTimeHelper dateTimeHelper, IDownloadService downloadService, IEncryptionService encryptionService, IExportManager exportManager, IGiftCardService giftCardService, ILocalizationService localizationService, IOrderModelFactory orderModelFactory, IOrderProcessingService orderProcessingService, IOrderService orderService, IPaymentService paymentService, IPdfService pdfService, IPermissionService permissionService, IPriceCalculationService priceCalculationService, IProductAttributeFormatter productAttributeFormatter, IProductAttributeParser productAttributeParser, IProductAttributeService productAttributeService, IProductService productService, IShipmentService shipmentService, IShippingService shippingService, IShoppingCartService shoppingCartService, IWorkContext workContext, IWorkflowMessageService workflowMessageService, OrderSettings orderSettings) : base(addressAttributeParser, addressService, customerActivityService, dateTimeHelper, downloadService, encryptionService, exportManager, giftCardService, localizationService, orderModelFactory, orderProcessingService, orderService, paymentService, pdfService, permissionService, priceCalculationService, productAttributeFormatter, productAttributeParser, productAttributeService, productService, shipmentService, shippingService, shoppingCartService, workContext, workflowMessageService, orderSettings)
+            ILocalizationService localizationService,
+            ILanguageService languageService)//IAddressAttributeParser addressAttributeParser, IAddressService addressService, ICustomerActivityService customerActivityService, IDateTimeHelper dateTimeHelper, IDownloadService downloadService, IEncryptionService encryptionService, IExportManager exportManager, IGiftCardService giftCardService, ILocalizationService localizationService, IOrderModelFactory orderModelFactory, IOrderProcessingService orderProcessingService, IOrderService orderService, IPaymentService paymentService, IPdfService pdfService, IPermissionService permissionService, IPriceCalculationService priceCalculationService, IProductAttributeFormatter productAttributeFormatter, IProductAttributeParser productAttributeParser, IProductAttributeService productAttributeService, IProductService productService, IShipmentService shipmentService, IShippingService shippingService, IShoppingCartService shoppingCartService, IWorkContext workContext, IWorkflowMessageService workflowMessageService, OrderSettings orderSettings) : base(addressAttributeParser, addressService, customerActivityService, dateTimeHelper, downloadService, encryptionService, exportManager, giftCardService, localizationService, orderModelFactory, orderProcessingService, orderService, paymentService, pdfService, permissionService, priceCalculationService, productAttributeFormatter, productAttributeParser, productAttributeService, productService, shipmentService, shippingService, shoppingCartService, workContext, workflowMessageService, orderSettings)
         {
             _orderService = orderService;
             _permissionService = permissionService;
@@ -53,6 +59,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _workContext = workContext;
             _customerActivityService = customerActivityService;
             _localizationService = localizationService;
+            _languageService = languageService;
             // hardcoded for now based on paypals 115% change allowed
             _allowedTotalChange = 1.15m;
         }
@@ -74,7 +81,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult AdjustOrderShipping(int id, AdjustOrderShippingModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
@@ -84,13 +90,22 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             var order = _orderService.GetOrderById(id);
             if (order == null)
                 return RedirectToAction("List");
+            
+            if (!OrderShippingChangeValidation(order.OrderTotal, order.OrderShippingExclTax, model.OrderShippingExclTaxValue))
+            {
+                model.Message = string.Format(_localizationService.GetResource(
+                    "Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid",
+                    _workContext.WorkingLanguage.Id,
+                    defaultValue: "Shipping change invalid. Needs to be between {0} and {1}."),
+                    0m, _allowedTotalChange);
 
+                return View("~/Plugins/Shipping.VendorPostHoc/Views/AdjustOrderShipping.cshtml", model);
+            }
             // vendors can only edit shipping and it is subject to validation.
             order.OrderTotal -= order.OrderShippingExclTax;
             order.OrderShippingExclTax = model.OrderShippingExclTaxValue;
             order.OrderShippingInclTax = order.OrderShippingExclTax;
-
-            _orderService.UpdateOrder(order);
+            order.OrderTotal += order.OrderShippingExclTax;
 
             //add a note
             order.OrderNotes.Add(new OrderNote
@@ -102,7 +117,11 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _orderService.UpdateOrder(order);
             LogEditOrder(order.Id);
 
-            return RedirectToAction("Edit", "Order", new { id });
+            model = new AdjustOrderShippingModel(order);
+            model.Message = _localizationService.GetResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success",
+                _workContext.WorkingLanguage.Id,
+                defaultValue: "Shipping updated.");
+            return View("~/Plugins/Shipping.VendorPostHoc/Views/AdjustOrderShipping.cshtml", model);
         }
 
         protected void LogEditOrder(int orderId)

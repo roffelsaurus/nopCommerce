@@ -1,4 +1,8 @@
+
 @model AdjustOrderShippingModel
+@{
+    Layout = "_AdminLayout";
+}
 
 @using  Nop.Plugin.Shipping.VendorPostHoc.Models;
 
@@ -31,19 +35,25 @@
                         </div>
                         <div class="col-md-9">
                             <div class="pull-left">
-                                @T("Admin.Orders.Fields.Edit.ExclTax")
+                                <strong>@T("Admin.Orders.Fields.Edit.ExclTax")</strong>
                                 <nop-editor asp-for="OrderShippingExclTaxValue" />
                             </div>
                         </div>
                     </div>
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="form-group">
+                            <div class="col-md-9 col-md-offset-3">
+                                <strong>@Model.Message</strong>
+                            </div>
+                        </div>
+                    }
                     <div class="form-group">
-                        <div class="col-md-2">
+                        <div class="col-md-9 col-md-offset-3">
                             <button type="submit" name="btnSaveAdjustShipping" id="btnSaveAdjustShipping" class="btn bg-yellow">
                                 <i class="fa fa-save"></i>
                                 @T("Admin.Common.Save")
                             </button>
-                        </div>
-                        <div class="col-md-2">
                             <a asp-action="Edit" asp-controller="Order" asp-route-id="@Model.Id" class="btn bg-red">
                                 <i class="fa fa-cancel"></i>
                                 @T("Admin.Common.Cancel")

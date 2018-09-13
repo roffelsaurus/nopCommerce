@@ -75,12 +75,21 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         public override void Install()
         {
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping", "Adjust Shipping");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid",
+                "Shipping change invalid. Needs to be between {0} and {1}.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success",
+                "Shipping updated.");
+
+
             base.Install();
         }
 
         public override void Uninstall()
         {
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping");
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid");
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success");
+
             base.Uninstall();
         }
     }
