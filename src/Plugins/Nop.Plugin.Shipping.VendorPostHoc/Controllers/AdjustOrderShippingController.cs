@@ -93,11 +93,12 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             
             if (!OrderShippingChangeValidation(order.OrderTotal, order.OrderShippingExclTax, model.OrderShippingExclTaxValue))
             {
-                model.Message = string.Format(_localizationService.GetResource(
+                var error = string.Format(_localizationService.GetResource(
                     "Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid",
                     _workContext.WorkingLanguage.Id,
                     defaultValue: "Shipping change invalid. Needs to be between {0} and {1}."),
-                    0m, _allowedTotalChange);
+                    0m, AllowedMaxShipping(order.OrderTotal,order.OrderShippingExclTax));
+                ErrorNotification(error);
 
                 return View("~/Plugins/Shipping.VendorPostHoc/Views/AdjustOrderShipping.cshtml", model);
             }
@@ -118,9 +119,10 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             LogEditOrder(order.Id);
 
             model = new AdjustOrderShippingModel(order);
-            model.Message = _localizationService.GetResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success",
+            var msg = _localizationService.GetResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success",
                 _workContext.WorkingLanguage.Id,
                 defaultValue: "Shipping updated.");
+            SuccessNotification(msg);
             return View("~/Plugins/Shipping.VendorPostHoc/Views/AdjustOrderShipping.cshtml", model);
         }
 
@@ -140,6 +142,12 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
 
             return orderShippingExclTaxValue >= 0m
                 && changeOfOldTotal <= _allowedTotalChange;
+        }
+
+        private decimal AllowedMaxShipping(decimal orderTotal,decimal orderShippingExclTax)
+        {
+            var maxTotalAfterChange = orderTotal * _allowedTotalChange;
+            return maxTotalAfterChange - orderTotal - orderShippingExclTax;
         }
     }
 }

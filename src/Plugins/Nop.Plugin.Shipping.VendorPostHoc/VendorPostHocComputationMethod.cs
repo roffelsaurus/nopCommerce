@@ -2,6 +2,7 @@
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
 using Nop.Services.Cms;
+using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
@@ -13,14 +14,21 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
 {
     public class VendorPostHocComputationMethod : BasePlugin, IShippingRateComputationMethod, IWidgetPlugin
     {
-
+        public const string SHIPPINGRATECOMPUTATIONMETHODSYSTEMNAME = "Baseline";
         private readonly IWebHelper _webHelper;
         private readonly ILocalizationService _localizationService;
+        private readonly ISettingService _settingService;
+        private readonly VendorPostHocSettings _vendorPostHocSettings;
 
-        public VendorPostHocComputationMethod(IWebHelper webHelper, ILocalizationService localizationService)
+        public VendorPostHocComputationMethod(IWebHelper webHelper, 
+            ILocalizationService localizationService,
+            ISettingService settingService,
+            VendorPostHocSettings vendorPostHocSettings)
         {
             _webHelper = webHelper;
-            this._localizationService = localizationService;
+            _localizationService = localizationService;
+            _settingService = settingService;
+            _vendorPostHocSettings = vendorPostHocSettings;
         }
 
         public ShippingRateComputationMethodType ShippingRateComputationMethodType => ShippingRateComputationMethodType.Offline;
@@ -42,10 +50,10 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
                   {
                       new ShippingOption()
                       {
-                           Name = "Estimated shipping",
-                           Description = "Estimated charges based on the vendors preferences. Can be adjusted after checkout.",
-                           ShippingRateComputationMethodSystemName = "Estimated",
-                           Rate = 100m
+                           Name = _localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name"),
+                           Description = _localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Description"),
+                           ShippingRateComputationMethodSystemName = SHIPPINGRATECOMPUTATIONMETHODSYSTEMNAME,
+                           Rate = _vendorPostHocSettings.ShippingCost
                       }
                   }
             };
@@ -74,6 +82,19 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
 
         public override void Install()
         {
+            var settings = new VendorPostHocSettings()
+            {
+                ShippingCost = 0
+            };
+            _settingService.SaveSetting(settings);
+
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name",
+                "Baseline shipping");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Description",
+                "Baseline charges based on the vendors preferences. Can be adjusted after checkout.");
+
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.Configure.ShippingCost", "Checkout Shipping cost");
+            
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping", "Adjust Shipping");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid",
                 "Shipping change invalid. Needs to be between {0} and {1}.");
@@ -81,11 +102,19 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
                 "Shipping updated.");
 
 
+
             base.Install();
         }
 
         public override void Uninstall()
         {
+            _settingService.DeleteSetting<VendorPostHocSettings>();
+
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name");
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Description");
+
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.Configure.ShippingCost");
+
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success");

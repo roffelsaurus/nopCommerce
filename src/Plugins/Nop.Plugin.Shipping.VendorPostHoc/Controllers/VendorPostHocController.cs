@@ -24,15 +24,18 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IPermissionService _permissionService;
         private readonly ISettingService _settingService;
+        private readonly VendorPostHocSettings _vendorPostHocSettings;
 
         public VendorPostHocController(
             ILocalizationService localizationService,
             IPermissionService permissionService,
-            ISettingService settingService)
+            ISettingService settingService,
+            VendorPostHocSettings vendorPostHocSettings)
         {
             _localizationService = localizationService;
             _permissionService = permissionService;
             _settingService = settingService;
+            _vendorPostHocSettings = vendorPostHocSettings;
         }
 
         public IActionResult Configure()
@@ -42,23 +45,26 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
 
             var model = new ConfigurationModel
             {
+                ShippingCost = _vendorPostHocSettings.ShippingCost
             };
             
             return View("~/Plugins/Shipping.VendorPostHoc/Views/Configure.cshtml", model);
         }
 
-        //[HttpPost]
-        //[AdminAntiForgery]
-        //public IActionResult Configure(ConfigurationModel model)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
-        //        return Content("Access denied");
+        [HttpPost]
+        [AdminAntiForgery]
+        public IActionResult Configure(ConfigurationModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+                return Content("Access denied");
 
-        //    //save settings
-        //   // _fixedByWeightByTotalSettings.LimitMethodsToCreated = model.LimitMethodsToCreated;
-        //    //_settingService.SaveSetting(_fixedByWeightByTotalSettings);
 
-        //    return Json(new { Result = true });
-        //}
+            //save settings
+            _vendorPostHocSettings.ShippingCost = model.ShippingCost;
+
+            _settingService.SaveSetting(_vendorPostHocSettings);
+            SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
+            return Configure();
+        }
     }
 }
