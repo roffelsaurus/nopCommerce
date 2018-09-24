@@ -5,6 +5,8 @@ using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Data;
+using Nop.Plugin.Shipping.VendorPostHoc.Domain;
+using Nop.Plugin.Shipping.VendorPostHoc.Services;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Framework.Infrastructure.Extensions;
 
@@ -32,7 +34,17 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Infrastructure
             //builder.RegisterType<EfRepository<ShippingByWeightByTotalRecord>>().As<IRepository<ShippingByWeightByTotalRecord>>()
             //    .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_shipping_weight_total_zip"))
             //    .InstancePerLifetimeScope();
-           // builder.RegisterType<VendorTransparentOrderModelFactory>().As<IOrderModelFactory>().InstancePerLifetimeScope();
+            // builder.RegisterType<VendorTransparentOrderModelFactory>().As<IOrderModelFactory>().InstancePerLifetimeScope();
+
+
+            //data context
+            builder.RegisterPluginDataContext<Data.VendorPostHocObjectContext>("nop_object_context_vendorposthoc");
+
+            //override required repository with our custom context
+            builder.RegisterType<EfRepository<VendorConfiguration>>().As<IRepository<VendorConfiguration>>()
+                .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_vendorposthoc"))
+                .InstancePerLifetimeScope();
+            builder.RegisterType<VendorConfigurationService>().As<IVendorConfigurationService>().InstancePerLifetimeScope();
         }
 
         /// <summary>

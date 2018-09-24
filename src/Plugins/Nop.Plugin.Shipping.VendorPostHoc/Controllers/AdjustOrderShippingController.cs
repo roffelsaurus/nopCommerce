@@ -4,6 +4,7 @@ using Nop.Core.Domain.Orders;
 using Nop.Plugin.Shipping.VendorPostHoc.Models;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
+using Nop.Services.Configuration;
 using Nop.Services.ExportImport;
 using Nop.Services.Helpers;
 using Nop.Services.Localization;
@@ -42,8 +43,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         private readonly ICustomerActivityService _customerActivityService;
         private readonly ILocalizationService _localizationService;
         private readonly ILanguageService _languageService;
-        private readonly decimal _allowedTotalChange;
-
+        private readonly VendorPostHocSettings _vendorposthocsettings;
 
         public AdjustOrderShippingController(IOrderService orderService,
             IPermissionService permissionService,
@@ -51,7 +51,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             IWorkContext workContext,
             ICustomerActivityService customerActivityService,
             ILocalizationService localizationService,
-            ILanguageService languageService)//IAddressAttributeParser addressAttributeParser, IAddressService addressService, ICustomerActivityService customerActivityService, IDateTimeHelper dateTimeHelper, IDownloadService downloadService, IEncryptionService encryptionService, IExportManager exportManager, IGiftCardService giftCardService, ILocalizationService localizationService, IOrderModelFactory orderModelFactory, IOrderProcessingService orderProcessingService, IOrderService orderService, IPaymentService paymentService, IPdfService pdfService, IPermissionService permissionService, IPriceCalculationService priceCalculationService, IProductAttributeFormatter productAttributeFormatter, IProductAttributeParser productAttributeParser, IProductAttributeService productAttributeService, IProductService productService, IShipmentService shipmentService, IShippingService shippingService, IShoppingCartService shoppingCartService, IWorkContext workContext, IWorkflowMessageService workflowMessageService, OrderSettings orderSettings) : base(addressAttributeParser, addressService, customerActivityService, dateTimeHelper, downloadService, encryptionService, exportManager, giftCardService, localizationService, orderModelFactory, orderProcessingService, orderService, paymentService, pdfService, permissionService, priceCalculationService, productAttributeFormatter, productAttributeParser, productAttributeService, productService, shipmentService, shippingService, shoppingCartService, workContext, workflowMessageService, orderSettings)
+            ILanguageService languageService,
+            VendorPostHocSettings vendorPostHocSettings)//IAddressAttributeParser addressAttributeParser, IAddressService addressService, ICustomerActivityService customerActivityService, IDateTimeHelper dateTimeHelper, IDownloadService downloadService, IEncryptionService encryptionService, IExportManager exportManager, IGiftCardService giftCardService, ILocalizationService localizationService, IOrderModelFactory orderModelFactory, IOrderProcessingService orderProcessingService, IOrderService orderService, IPaymentService paymentService, IPdfService pdfService, IPermissionService permissionService, IPriceCalculationService priceCalculationService, IProductAttributeFormatter productAttributeFormatter, IProductAttributeParser productAttributeParser, IProductAttributeService productAttributeService, IProductService productService, IShipmentService shipmentService, IShippingService shippingService, IShoppingCartService shoppingCartService, IWorkContext workContext, IWorkflowMessageService workflowMessageService, OrderSettings orderSettings) : base(addressAttributeParser, addressService, customerActivityService, dateTimeHelper, downloadService, encryptionService, exportManager, giftCardService, localizationService, orderModelFactory, orderProcessingService, orderService, paymentService, pdfService, permissionService, priceCalculationService, productAttributeFormatter, productAttributeParser, productAttributeService, productService, shipmentService, shippingService, shoppingCartService, workContext, workflowMessageService, orderSettings)
         {
             _orderService = orderService;
             _permissionService = permissionService;
@@ -60,8 +61,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             _customerActivityService = customerActivityService;
             _localizationService = localizationService;
             _languageService = languageService;
-            // hardcoded for now based on paypals 115% change allowed
-            _allowedTotalChange = 1.15m;
+            _vendorposthocsettings = vendorPostHocSettings;
         }
 
         public IActionResult AdjustOrderShipping(int id)
@@ -141,12 +141,12 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             var changeOfOldTotal = newtotalWithShipping / orderTotal;
 
             return orderShippingExclTaxValue >= 0m
-                && changeOfOldTotal <= _allowedTotalChange;
+                && changeOfOldTotal <= _vendorposthocsettings.AllowedTotalShippingCostChange;
         }
 
         private decimal AllowedMaxShipping(decimal orderTotal,decimal orderShippingExclTax)
         {
-            var maxTotalAfterChange = orderTotal * _allowedTotalChange;
+            var maxTotalAfterChange = orderTotal * _vendorposthocsettings.AllowedTotalShippingCostChange;
             return maxTotalAfterChange - orderTotal - orderShippingExclTax;
         }
     }
