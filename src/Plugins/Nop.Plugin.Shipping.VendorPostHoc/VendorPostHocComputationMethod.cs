@@ -11,13 +11,14 @@ using Nop.Services.Localization;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
 using Nop.Web.Framework.Infrastructure;
+using Nop.Web.Framework.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Nop.Plugin.Shipping.VendorPostHoc
 {
-    public class VendorPostHocComputationMethod : BasePlugin, IShippingRateComputationMethod, IWidgetPlugin
+    public class VendorPostHocComputationMethod : BasePlugin, IShippingRateComputationMethod, IWidgetPlugin, IAdminMenuPlugin
     {
         public const string SHIPPINGRATECOMPUTATIONMETHODSYSTEMNAME = "Baseline";
         private readonly IWebHelper _webHelper;
@@ -115,7 +116,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.VendorConfiguration.ShippingCost",
                 "Standard shipping cost");
-            
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.VendorConfiguration",
+                "Configure Sales");
 
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping", "Adjust Shipping");
@@ -140,12 +142,35 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.Configure.AllowedTotalShippingCostChange");
 
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.VendorConfiguration.ShippingCost");
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.VendorConfiguration");
             
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success");
 
             base.Uninstall();
+        }
+
+        public void ManageSiteMap(SiteMapNode rootNode)
+        {
+            var menuItem = new SiteMapNode()
+            {
+                SystemName = "VendorConfiguration",
+                Title = "Configure Sales",
+                ControllerName = "VendorConfiguration",
+                ActionName = "Edit",
+                Visible = true,
+                RouteValues = new Microsoft.AspNetCore.Routing.RouteValueDictionary() { { "Area", "Admin" } },
+                IconClass = "fa-gears"
+            };
+            var pluginNode = rootNode.ChildNodes.FirstOrDefault(x => x.SystemName == "Sales");
+            if (pluginNode != null)
+                pluginNode.ChildNodes.Add(menuItem);
+            else
+                rootNode.ChildNodes.Add(menuItem);
+
+            // remove help section
+            rootNode.ChildNodes.Remove(rootNode.ChildNodes.Single(i => i.SystemName == "Help"));
         }
     }
 }

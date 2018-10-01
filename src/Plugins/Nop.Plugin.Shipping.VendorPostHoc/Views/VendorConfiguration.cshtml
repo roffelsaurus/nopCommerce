@@ -1,28 +1,44 @@
 ﻿@model Nop.Plugin.Shipping.VendorPostHoc.Models.VendorConfigurationModel
 @{
-    Layout = "_ConfigurePlugin";
+    Layout = "_AdminLayout";
 }
 
+@{
+    //page title
+    ViewBag.Title = T("Plugin.Shipping.VendorPostHoc.VendorConfiguration").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("VendorConfiguration");
+}
 
 <form asp-controller="VendorConfiguration" asp-action="Edit" method="post">
-    <div class="panel-group">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <div class="form-group">
-                    <div class="col-md-3">
-                        <nop-label asp-for="ShippingCost" />
-                    </div>
-                    <div class="col-md-9">
-                        <nop-editor asp-for="ShippingCost" />
-                        <span asp-validation-for="ShippingCost"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-md-9 col-md-offset-3">
-                        <input type="submit" name="save" class="btn bg-blue" value="@T("Admin.Common.Save")" />
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Plugin.Shipping.VendorPostHoc.VendorConfiguration")
+        </h1>
+    </div>
+    <div asp-validation-summary="All"></div>
+    <div class="content">
+        <div class="form-horizontal">
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <nop-label asp-for="ShippingCost" />
+                            </div>
+                            <div class="col-md-9">
+                                <nop-editor asp-for="ShippingCost" />
+                                <span asp-validation-for="ShippingCost"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-9 col-md-offset-3">
+                                <input type="submit" name="save" class="btn bg-blue" value="@T("Admin.Common.Save")" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            </div>
         </div>
-    </div>
 </form>

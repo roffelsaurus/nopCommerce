@@ -51,7 +51,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
 
         public IActionResult Edit()
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            if (!_permissionService.Authorize(StandardPermissionProvider.AccessAdminPanel))
                 return AccessDeniedView();
 
             var vendor = _workcontext.CurrentVendor;
@@ -75,7 +75,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         [AdminAntiForgery]
         public IActionResult Edit(VendorConfigurationModel model)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageShippingSettings))
+            if (!_permissionService.Authorize(StandardPermissionProvider.AccessAdminPanel))
                 return Content("Access denied");
 
             var domainmodel = _vendorconfigurationservice.GetForVendor(_workcontext.CurrentVendor.Id);
