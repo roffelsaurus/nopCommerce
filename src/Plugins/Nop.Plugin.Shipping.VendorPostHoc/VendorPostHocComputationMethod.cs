@@ -107,9 +107,9 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _settingService.SaveSetting(settings);
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name",
-                "Baseline shipping");
+                "Estimated shipping");
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Description",
-                "Baseline charges based on the vendors preferences. Can be adjusted after checkout.");
+                "Estimated charges based on the vendors preferences. Can be adjusted by the seller when they process the order. The total order after adjustment must be between 0% and 115% of original order total.");
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.Configure.AllowedTotalShippingCostChange", 
                 "Allowed total shipping cost change(%)");
