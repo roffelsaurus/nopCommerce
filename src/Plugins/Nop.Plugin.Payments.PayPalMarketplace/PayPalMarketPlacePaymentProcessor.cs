@@ -1,29 +1,100 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Plugins;
+using Nop.Services.Cms;
+using Nop.Services.Localization;
 using Nop.Services.Payments;
+using Nop.Web.Framework.Infrastructure;
 using System;
 using System.Collections.Generic;
 
 namespace Nop.Plugin.Payments.PayPalMarketplace
 {
-    public class PayPalMarketPlacePaymentProcessor : BasePlugin, IPaymentMethod
+    public class PayPalMarketPlacePaymentProcessor : BasePlugin, IPaymentMethod, IWidgetPlugin
     {
-        public bool SupportCapture => throw new NotImplementedException();
+        private readonly ILocalizationService _localizationservice;
+        private readonly IWebHelper _webhelper;
 
-        public bool SupportPartiallyRefund => throw new NotImplementedException();
+        public PayPalMarketPlacePaymentProcessor(ILocalizationService localizationService,
+            IWebHelper webHelper)
+        {
+            _localizationservice = localizationService;
+            _webhelper = webHelper;
+        }
 
-        public bool SupportRefund => throw new NotImplementedException();
+        /// <summary>
+        /// Gets a configuration page URL
+        /// </summary>
+        public override string GetConfigurationPageUrl()
+        {
+            return $"{_webhelper.GetStoreLocation()}Admin/PaymentPayPalMarketPlace/Configure";
+        }
 
-        public bool SupportVoid => throw new NotImplementedException();
+        #region WidgetPlugin Methods
+        public string GetWidgetViewComponentName(string widgetZone)
+        {
+            switch (widgetZone)
+            {
+                case string s when s.Equals(PublicWidgetZones.AccountNavigationBefore): return PluginWidgets.AccountNavPayPalIntegration;
+                default:
+                    return null;
+            }
+        }
 
-        public RecurringPaymentType RecurringPaymentType => throw new NotImplementedException();
+        public IList<string> GetWidgetZones()
+        {
+            return new List<string>()
+            {
+                PublicWidgetZones.AccountNavigationBefore
+            };
+        }
 
-        public PaymentMethodType PaymentMethodType => throw new NotImplementedException();
+        #endregion
 
-        public bool SkipPaymentInfo => throw new NotImplementedException();
+        #region Install
+        public override void Install()
+        {
+            //_vendorPostHocObjectContext.Install();
+            //var settings = new VendorPostHocSettings()
+            //{
+            //    AllowedTotalShippingCostChange = 1.15m // default paypal allowed change
+            //};
+            //_settingService.SaveSetting(settings);
 
-        public string PaymentMethodDescription => throw new NotImplementedException();
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration",
+                "PayPal Onboarding");
+
+            base.Install();
+        }
+
+        public override void Uninstall()
+        {
+            //_vendorPostHocObjectContext.Uninstall();
+            //_settingService.DeleteSetting<VendorPostHocSettings>();
+
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration");
+            base.Uninstall();
+        }
+        #endregion
+
+        #region Payment Methods
+
+        public bool SupportCapture => true;
+
+        public bool SupportPartiallyRefund => false;
+
+        public bool SupportRefund => true;
+
+        public bool SupportVoid => true;
+
+        public RecurringPaymentType RecurringPaymentType => RecurringPaymentType.NotSupported;
+
+        public PaymentMethodType PaymentMethodType => PaymentMethodType.Redirection;
+
+        public bool SkipPaymentInfo => false;
+
+        public string PaymentMethodDescription => "PayPalMarketPlace";
 
         public CancelRecurringPaymentResult CancelRecurringPayment(CancelRecurringPaymentRequest cancelPaymentRequest)
         {
@@ -42,7 +113,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
 
         public decimal GetAdditionalHandlingFee(IList<ShoppingCartItem> cart)
         {
-            throw new NotImplementedException();
+            return 0m;
         }
 
         public ProcessPaymentRequest GetPaymentInfo(IFormCollection form)
@@ -54,7 +125,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
         {
             throw new NotImplementedException();
         }
-
+        
         public bool HidePaymentMethod(IList<ShoppingCartItem> cart)
         {
             throw new NotImplementedException();
@@ -89,5 +160,6 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
         {
             throw new NotImplementedException();
         }
+        #endregion
     }
 }

@@ -1,0 +1,28 @@
+﻿@using Nop.Plugin.Payments.PayPalMarketplace.Models;
+@using Nop.Plugin.Payments.PayPalMarketplace;
+@using System.Text.Encodings.Web
+@using Nop.Core
+
+@model OnBoardingModel
+@inject Nop.Core.IWebHelper webHelper
+@{
+    Layout = "_ColumnsTwo";
+
+    //title
+    Html.AddTitleParts(T("PageTitle.Account").Text);
+    //page class
+    Html.AppendPageCssClassParts("html-account-page");
+    Html.AppendPageCssClassParts("html-customer-info-page");
+}
+
+@section left
+    {
+    @await Component.InvokeAsync("CustomerNavigation", new { selectedTabId = OnBoardingModel.CustomerNavigationOnBoarding })
+}
+
+
+
+
+<div>
+    ONBOARDING WORKS!
+</div>

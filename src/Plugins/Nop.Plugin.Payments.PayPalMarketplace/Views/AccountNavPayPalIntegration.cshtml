@@ -1,0 +1,15 @@
+﻿@model CustomerNavigationModel
+
+
+@using Nop.Web.Models.Customer;
+@using Nop.Plugin.Payments.PayPalMarketplace;
+@using Nop.Plugin.Payments.PayPalMarketplace.Models;
+@using Nop.Plugin.Payments.PayPalMarketplace.Infrastructure;
+
+
+<li class="customer-vendor-info">
+    <a href="@Url.RouteUrl(RouteProvider.ONBOARDING)"
+       class="@(Model.SelectedTab == OnBoardingModel.CustomerNavigationOnBoarding ? "active" : "inactive")">
+        @T("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration")
+    </a>
+</li>
