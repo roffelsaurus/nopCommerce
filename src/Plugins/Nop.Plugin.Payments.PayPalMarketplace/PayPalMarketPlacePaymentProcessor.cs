@@ -3,6 +3,7 @@ using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Plugins;
 using Nop.Services.Cms;
+using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Payments;
 using Nop.Web.Framework.Infrastructure;
@@ -15,12 +16,15 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
     {
         private readonly ILocalizationService _localizationservice;
         private readonly IWebHelper _webhelper;
+        private readonly ISettingService _settingService;
 
         public PayPalMarketPlacePaymentProcessor(ILocalizationService localizationService,
-            IWebHelper webHelper)
+            IWebHelper webHelper,
+            ISettingService settingService)
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
+            _settingService = settingService;
         }
 
         /// <summary>
@@ -56,14 +60,20 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
         public override void Install()
         {
             //_vendorPostHocObjectContext.Install();
-            //var settings = new VendorPostHocSettings()
-            //{
-            //    AllowedTotalShippingCostChange = 1.15m // default paypal allowed change
-            //};
-            //_settingService.SaveSetting(settings);
 
+            _settingService.SaveSetting(new PayPalMarketPlacePaymentSettings
+            {
+                UseSandbox = true,
+                ClientId = "",
+                ClientSecret = ""
+            });
+            
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration",
                 "PayPal Onboarding");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.UseSandbox", "Use Sandbox");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientId", "Enter client Id");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientSecret", "Enter client secret");
+
 
             base.Install();
         }
@@ -71,9 +81,13 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
         public override void Uninstall()
         {
             //_vendorPostHocObjectContext.Uninstall();
-            //_settingService.DeleteSetting<VendorPostHocSettings>();
+            _settingService.DeleteSetting<PayPalMarketPlacePaymentSettings>();
 
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.UseSandbox");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.ClientId");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.ClientSecret");
+
             base.Uninstall();
         }
         #endregion

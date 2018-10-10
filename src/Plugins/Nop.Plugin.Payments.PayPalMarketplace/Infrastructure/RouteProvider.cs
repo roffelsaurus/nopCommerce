@@ -23,7 +23,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Infrastructure
             //routeBuilder.MapLocalizedRoute("Wishlist", "wishlist/{customerGuid?}",
             //    new { controller = "ShoppingCart", action = "Wishlist" });
             
-            routeBuilder.MapLocalizedRoute(ONBOARDING, "PayPalMarketPlace/OnBoarding",
+            routeBuilder.MapRoute(ONBOARDING, "PayPalMarketPlace/OnBoarding",
                 new { controller = "OnBoarding", action = "Index" });
         }
 
@@ -36,7 +36,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Infrastructure
         /// </summary>
         public int Priority
         {
-            get { return 100; }
+            get { return -1; }
         }
 
         #endregion

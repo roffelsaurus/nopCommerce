@@ -82,9 +82,14 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
 
             //load settings for a chosen store scope
             // var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            // var payPalStandardPaymentSettings = _settingService.LoadSetting<PayPalStandardPaymentSettings>(storeScope);
+            var payPalMarketPlacePaymentSettings = _settingService.LoadSetting<PayPalMarketPlacePaymentSettings>();
 
-            var model = new ConfigurationModel();
+            var model = new ConfigurationModel()
+            {
+                UseSandbox = payPalMarketPlacePaymentSettings.UseSandbox,
+                ClientId = payPalMarketPlacePaymentSettings.ClientId,
+                ClientSecret = payPalMarketPlacePaymentSettings.ClientSecret
+            };
 
             return View("~/Plugins/Payments.PayPalMarketPlace/Views/Configure.cshtml", model);
         }
@@ -101,21 +106,14 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
             if (!ModelState.IsValid)
                 return Configure();
 
-            ////load settings for a chosen store scope
-            //var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            //var payPalStandardPaymentSettings = _settingService.LoadSetting<PayPalStandardPaymentSettings>(storeScope);
+            var payPalMarketPlacePaymentSettings = _settingService.LoadSetting<PayPalMarketPlacePaymentSettings>();
 
-            ////save settings
-            //payPalStandardPaymentSettings.UseSandbox = model.UseSandbox;
-            //payPalStandardPaymentSettings.BusinessEmail = model.BusinessEmail;
-            //payPalStandardPaymentSettings.PdtToken = model.PdtToken;
-            //payPalStandardPaymentSettings.PassProductNamesAndTotals = model.PassProductNamesAndTotals;
-            //payPalStandardPaymentSettings.AdditionalFee = model.AdditionalFee;
-            //payPalStandardPaymentSettings.AdditionalFeePercentage = model.AdditionalFeePercentage;
 
-            ///* We do not clear cache after each setting update.
-            // * This behavior can increase performance because cached settings will not be cleared 
-            // * and loaded from database after each update */
+            payPalMarketPlacePaymentSettings.UseSandbox = model.UseSandbox;
+            payPalMarketPlacePaymentSettings.ClientId = model.ClientId;
+            payPalMarketPlacePaymentSettings.ClientSecret = model.ClientSecret;
+
+            _settingService.SaveSetting(payPalMarketPlacePaymentSettings);
             //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.UseSandbox, model.UseSandbox_OverrideForStore, storeScope, false);
             //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.BusinessEmail, model.BusinessEmail_OverrideForStore, storeScope, false);
             //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.PdtToken, model.PdtToken_OverrideForStore, storeScope, false);

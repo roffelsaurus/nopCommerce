@@ -20,9 +20,14 @@
     @await Component.InvokeAsync("CustomerNavigation", new { selectedTabId = OnBoardingModel.CustomerNavigationOnBoarding })
 }
 
-
-
-
-<div>
-    ONBOARDING WORKS!
-</div>
+<form asp-controller="OnBoarding" asp-action="OnBoard" method="post">
+    <div class="page account-page customer-info-page">
+        <div class="page-title">
+            <h1>@T("Account.MyAccount") - @T("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration")</h1>
+        </div>
+        <div>@T("Plugin.Payments.PayPalMarketPlace.OnBoarding.Consent")</div>
+        <div class="page-body">
+            <input type="submit" name="save" class="btn bg-primary" value="@T("Plugin.Payments.PayPalMarketPlace.OnBoarding.Onboard")" />
+        </div>
+    </div>
+</form>

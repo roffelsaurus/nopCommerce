@@ -42,16 +42,20 @@ using Nop.Web.Framework.Security;
 using Nop.Web.Framework.Security.Captcha;
 using Nop.Web.Framework.Validators;
 using Nop.Web.Models.Customer;
+using PayPal.Core;
 
 namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
 {
     public partial class OnBoardingController : BasePublicController
     {
         private readonly IWorkContext _workcontext;
+        private readonly PayPalHttpClient _paypalhttpclient;
 
-        public OnBoardingController(IWorkContext workContext)
+        public OnBoardingController(IWorkContext workContext,
+            PayPalHttpClient payPalHttpClient)
         {
             _workcontext = workContext;
+            _paypalhttpclient = payPalHttpClient;
         }
         [HttpsRequirement(SslRequirement.Yes)]
         public virtual IActionResult Index()
@@ -59,7 +63,20 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
             if (!_workcontext.CurrentCustomer.IsRegistered())
                 return Challenge();
             var model = new OnBoardingModel();
-            return View(model);
+            return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
         }
+
+        [HttpsRequirement(SslRequirement.Yes)]
+        public virtual IActionResult OnBoard(OnBoardingModel model)
+        {
+            if (!_workcontext.CurrentCustomer.IsRegistered())
+                return Challenge();
+
+           //  _paypalhttpclient.Execute()
+
+
+            return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
+        }
+
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Nop.Web.Areas.Admin.Factories;
+using Nop.Web.Factories;
 using Nop.Web.Areas.Admin.Models.Orders;
 using Nop.Web.Framework.Components;
 using Nop.Web.Models.Customer;
@@ -14,8 +14,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Components
     {
         public IViewComponentResult Invoke(string widgetZone, object additionalData)
         {
-            var model = additionalData as CustomerNavigationModel;
-            return View("~/Plugins/Payments.PayPalMarketplace/Views/AccountNavPayPalIntegration.cshtml", model);
+            return View("~/Plugins/Payments.PayPalMarketplace/Views/AccountNavPayPalIntegration.cshtml");
         }
     }
 }
