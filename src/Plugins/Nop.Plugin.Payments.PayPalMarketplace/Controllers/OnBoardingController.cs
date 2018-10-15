@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
+using BraintreeHttp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -16,6 +18,7 @@ using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Security;
 using Nop.Core.Domain.Tax;
 using Nop.Plugin.Payments.PayPalMarketplace.Models;
+using Nop.Plugin.Payments.PayPalMarketplace.Services;
 using Nop.Services.Authentication;
 using Nop.Services.Authentication.External;
 using Nop.Services.Catalog;
@@ -43,40 +46,36 @@ using Nop.Web.Framework.Security.Captcha;
 using Nop.Web.Framework.Validators;
 using Nop.Web.Models.Customer;
 using PayPal.Core;
+using PayPal.v1.PartnerReferrals;
+using PayPal.v1.Webhooks;
 
 namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
 {
     public partial class OnBoardingController : BasePublicController
     {
         private readonly IWorkContext _workcontext;
-        private readonly PayPalHttpClient _paypalhttpclient;
+        private readonly IOnBoardingService _onBoardingService;
 
         public OnBoardingController(IWorkContext workContext,
-            PayPalHttpClient payPalHttpClient)
+            IOnBoardingService onBoardingService
+
+            )
         {
             _workcontext = workContext;
-            _paypalhttpclient = payPalHttpClient;
+            _onBoardingService = onBoardingService;
         }
+
         [HttpsRequirement(SslRequirement.Yes)]
-        public virtual IActionResult Index()
+        public IActionResult Index(bool consent = false)
         {
             if (!_workcontext.CurrentCustomer.IsRegistered())
                 return Challenge();
             var model = new OnBoardingModel();
+            if (consent)
+            {
+                model.OnBoardingUrl = _onBoardingService.GetActionUrl();
+            }
             return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
         }
-
-        [HttpsRequirement(SslRequirement.Yes)]
-        public virtual IActionResult OnBoard(OnBoardingModel model)
-        {
-            if (!_workcontext.CurrentCustomer.IsRegistered())
-                return Challenge();
-
-           //  _paypalhttpclient.Execute()
-
-
-            return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
-        }
-
     }
 }

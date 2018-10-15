@@ -17,6 +17,8 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
 
         public string ClientSecret { get; set; }
 
+        public string PartnerId { get; set; }
+
         ///// <summary>
         ///// Gets or sets a business email
         ///// </summary>

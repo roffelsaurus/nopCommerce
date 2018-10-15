@@ -5,6 +5,7 @@ using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Data;
+using Nop.Plugin.Payments.PayPalMarketplace.Services;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Framework.Infrastructure.Extensions;
 using PayPal.Core;
@@ -37,6 +38,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Infrastructure
                 var env = c.Resolve<PayPalEnvironment>();
                 return new PayPalHttpClient(env);
             }).As<PayPalHttpClient>().SingleInstance();
+            builder.RegisterType<OnBoardingService>().As<IOnBoardingService>();
             //builder.RegisterType<ShippingByWeightByTotalService>().As<IShippingByWeightByTotalService>().InstancePerLifetimeScope();
 
             ////data context

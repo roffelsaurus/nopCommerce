@@ -15,5 +15,8 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Models
 
         [NopResourceDisplayName("Plugins.Payments.PayPalMarketPlace.Fields.ClientSecret")]
         public string ClientSecret { get; set; }
+
+        [NopResourceDisplayName("Plugins.Payments.PayPalMarketPlace.Fields.PartnerId")]
+        public string PartnerId { get; set; }
     }
 }

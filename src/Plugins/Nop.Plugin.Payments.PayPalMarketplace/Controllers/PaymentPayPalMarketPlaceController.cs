@@ -79,16 +79,15 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManagePaymentMethods))
                 return AccessDeniedView();
-
-            //load settings for a chosen store scope
-            // var storeScope = _storeContext.ActiveStoreScopeConfiguration;
+            
             var payPalMarketPlacePaymentSettings = _settingService.LoadSetting<PayPalMarketPlacePaymentSettings>();
 
             var model = new ConfigurationModel()
             {
                 UseSandbox = payPalMarketPlacePaymentSettings.UseSandbox,
                 ClientId = payPalMarketPlacePaymentSettings.ClientId,
-                ClientSecret = payPalMarketPlacePaymentSettings.ClientSecret
+                ClientSecret = payPalMarketPlacePaymentSettings.ClientSecret,
+                PartnerId = payPalMarketPlacePaymentSettings.PartnerId
             };
 
             return View("~/Plugins/Payments.PayPalMarketPlace/Views/Configure.cshtml", model);
@@ -112,18 +111,9 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
             payPalMarketPlacePaymentSettings.UseSandbox = model.UseSandbox;
             payPalMarketPlacePaymentSettings.ClientId = model.ClientId;
             payPalMarketPlacePaymentSettings.ClientSecret = model.ClientSecret;
+            payPalMarketPlacePaymentSettings.PartnerId = model.PartnerId;
 
             _settingService.SaveSetting(payPalMarketPlacePaymentSettings);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.UseSandbox, model.UseSandbox_OverrideForStore, storeScope, false);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.BusinessEmail, model.BusinessEmail_OverrideForStore, storeScope, false);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.PdtToken, model.PdtToken_OverrideForStore, storeScope, false);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.PassProductNamesAndTotals, model.PassProductNamesAndTotals_OverrideForStore, storeScope, false);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.AdditionalFee, model.AdditionalFee_OverrideForStore, storeScope, false);
-            //_settingService.SaveSettingOverridablePerStore(payPalStandardPaymentSettings, x => x.AdditionalFeePercentage, model.AdditionalFeePercentage_OverrideForStore, storeScope, false);
-
-            ////now clear settings cache
-            //_settingService.ClearCache();
-
             SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
 
             return Configure();

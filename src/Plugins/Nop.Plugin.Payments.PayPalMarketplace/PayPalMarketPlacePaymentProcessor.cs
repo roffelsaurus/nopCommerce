@@ -65,15 +65,21 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
             {
                 UseSandbox = true,
                 ClientId = "",
-                ClientSecret = ""
+                ClientSecret = "",
+                PartnerId = ""
             });
             
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.AccountNavPayPalIntegration",
                 "PayPal Onboarding");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.UseSandbox", "Use Sandbox");
-            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientId", "Enter client Id");
-            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientSecret", "Enter client secret");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientId", "Enter API client Id");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.ClientSecret", "Enter API client secret");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.PartnerId", "Enter Partner Id");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.Fields.PartnerId", "Enter Partner Id");
 
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.OnBoarding.Consent", "By clicking consent you agree to sharing data with ReTrade and PayPal. You will get the option to link your account as a merchant account with Retrade.");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.OnBoarding.ConsentAction", "Consent");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugins.Payments.PayPalMarketPlace.OnBoarding.PayPalMiniBrowerAction", "Open PayPal Mini Browser");
 
             base.Install();
         }
@@ -87,7 +93,11 @@ namespace Nop.Plugin.Payments.PayPalMarketplace
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.UseSandbox");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.ClientId");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.ClientSecret");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.Fields.PartnerId");
 
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.OnBoarding.Consent");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.OnBoarding.ConsentAction");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.PayPalMarketPlace.OnBoarding.PayPalMiniBrowerAction");
             base.Uninstall();
         }
         #endregion

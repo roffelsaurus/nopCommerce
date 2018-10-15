@@ -7,6 +7,6 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Models
 {
     public class OnBoardingModel
     {
-        public static CustomerNavigationEnum CustomerNavigationOnBoarding = (CustomerNavigationEnum)990;
+        public string OnBoardingUrl { get; set; }
     }
 }
