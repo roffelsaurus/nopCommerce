@@ -1,7 +1,10 @@
-﻿namespace Nop.Plugin.Payments.PayPalMarketplace.Services
+﻿using PayPal.v1.PartnerReferrals;
+
+namespace Nop.Plugin.Payments.PayPalMarketplace.Services
 {
     public interface IOnBoardingService
     {
-        string GetActionUrl();
+        string GetActionUrl(PartnerReferral referral);
+        PartnerReferral CreateNewReferral();
     }
 }

@@ -5,6 +5,7 @@ using BraintreeHttp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Core.Domain;
 using Nop.Core.Domain.Catalog;
@@ -55,14 +56,17 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
     {
         private readonly IWorkContext _workcontext;
         private readonly IOnBoardingService _onBoardingService;
+        private readonly ILogger _logger;
 
         public OnBoardingController(IWorkContext workContext,
-            IOnBoardingService onBoardingService
+            IOnBoardingService onBoardingService,
+            ILogger logger
 
             )
         {
             _workcontext = workContext;
             _onBoardingService = onBoardingService;
+            _logger = logger;
         }
 
         [HttpsRequirement(SslRequirement.Yes)]
@@ -73,7 +77,19 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Controllers
             var model = new OnBoardingModel();
             if (consent)
             {
-                model.OnBoardingUrl = _onBoardingService.GetActionUrl();
+                PartnerReferral referral = null;
+                try
+                {
+                    referral = _onBoardingService.CreateNewReferral();
+                }
+                catch (Exception e)
+                {
+                    _logger.Error("Error creating new referral.",e);
+                   return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
+                }
+                var json = JsonConvert.SerializeObject(referral);
+                _logger.Information(json);
+                model.OnBoardingUrl = _onBoardingService.GetActionUrl(referral);
             }
             return View("~/Plugins/Payments.PayPalMarketplace/Views/OnBoarding.cshtml", model);
         }

@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using PayPal.v1.PartnerReferrals.User;
+using PayPal.v1.PartnerReferrals.Capabilities;
 
 namespace Nop.Plugin.Payments.PayPalMarketplace.Services
 {
@@ -15,60 +17,60 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Services
     public class OnBoardingService : IOnBoardingService
     {
         private readonly IWorkContext _workContext;
-        private readonly PayPalHttpClient _payPalHttpClient;
         private readonly ILogger _logger;
         private readonly PayPalMarketPlacePaymentSettings _payPalMarketPlacePaymentSettings;
+        private readonly PayPalHttpClient _payPalHttpClient;
 
         public OnBoardingService(IWorkContext workContext,
-            PayPalHttpClient payPalHttpClient,
             ILogger logger,
-            PayPalMarketPlacePaymentSettings payPalMarketPlacePaymentSettings)
+            PayPalMarketPlacePaymentSettings payPalMarketPlacePaymentSettings,
+            PayPalHttpClient payPalHttpClient)
         {
             _workContext = workContext;
-            _payPalHttpClient = payPalHttpClient;
             _logger = logger;
             _payPalMarketPlacePaymentSettings = payPalMarketPlacePaymentSettings;
+            _payPalHttpClient = payPalHttpClient;
         }
         
-        public string GetActionUrl()
+        public PartnerReferral CreateNewReferral()
         {
             var referral = new PartnerReferral()
             {
-                CustomerData = new PayPal.v1.PartnerReferrals.User.User()
+                CustomerData = new User()
                 {
-                    PartnerSpecificIdentifiers = new PayPal.v1.PartnerReferrals.User.PartnerSpecificIdentifier[]
+                    PartnerSpecificIdentifiers = new PartnerSpecificIdentifier[]
                     {
-                        new PayPal.v1.PartnerReferrals.User.PartnerSpecificIdentifier()
+                        new PartnerSpecificIdentifier()
                         {
-                            Type = PayPal.v1.PartnerReferrals.User.PartnerSpecificIdentifierType.TRACKING_ID,
-                            Value = _workContext.CurrentVendor.Id.ToString() // good enough ID?
+                            PartnerSpecificIdentifierType = PartnerSpecificIdentifierType.TRACKING_ID,
+                            Value = _workContext.CurrentCustomer.Id.ToString()
                         }
                     }
                 },
-                RequestedCapabilities = new PayPal.v1.PartnerReferrals.Capabilities.Capability[]
+                RequestedCapabilities = new Capability[]
                 {
-                    new PayPal.v1.PartnerReferrals.Capabilities.Capability()
+                    new Capability()
                     {
-                        CapabilityType = PayPal.v1.PartnerReferrals.Capabilities.CapabilityType.API_INTEGRATION,
-                        ApiIntegrationPreference =
+                        CapabilityType = CapabilityType.API_INTEGRATION,
+                        ApiIntegrationPreference = new ApiIntegrationPreference()
                         {
-                            PartnerId = _payPalMarketPlacePaymentSettings.PartnerId, // Our paypal id
-                            RestApiIntegration = new PayPal.v1.PartnerReferrals.Capabilities.RestApiIntegration()
+                            PartnerId = _payPalMarketPlacePaymentSettings.PartnerId,
+                            RestApiIntegration = new RestApiIntegration()
                             {
-                                IntegrationMethod = PayPal.v1.PartnerReferrals.Capabilities.IntegrationMethod.PAYPAL,
-                                IntegrationType = PayPal.v1.PartnerReferrals.Capabilities.IntegrationType.THIRD_PARTY
+                                IntegrationMethod = IntegrationMethod.PAYPAL,
+                                IntegrationType = IntegrationType.THIRD_PARTY
                             },
-                            RestThirdPartyDetails = new PayPal.v1.PartnerReferrals.Capabilities.RestThirdPartyDetails()
+                            RestThirdPartyDetails = new RestThirdPartyDetails()
                             {
                                 PartnerClientId = _payPalMarketPlacePaymentSettings.ClientId,
-                                RestEndpointFeatures = new PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature[]
+                                RestEndpointFeatures = new string[]
                                 {
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.PAYMENT,
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.REFUND,
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.PARTNER_FEE,
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.DELAY_FUNDS_DISBURSEMENT,
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.READ_SELLER_DISPUTE,
-                                    PayPal.v1.PartnerReferrals.Capabilities.RestEndpointFeature.UPDATE_SELLER_DISPUTE
+                                    RestEndpointFeature.PAYMENT,
+                                    RestEndpointFeature.REFUND,
+                                    RestEndpointFeature.PARTNER_FEE,
+                                    RestEndpointFeature.DELAY_FUNDS_DISBURSEMENT,
+                                    RestEndpointFeature.READ_SELLER_DISPUTE,
+                                    RestEndpointFeature.UPDATE_SELLER_DISPUTE
                                 }
                             }
                         }
@@ -76,7 +78,7 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Services
                 },
                 WebExperiencePreference = new WebExperiencePreference()
                 {
-                    PartnerLogoUrl = "", // logo ? 
+                    PartnerLogoUrl = "",
                     UseMiniBrowser = true
                 },
                 CollectedConsents = new LegalConsent[]
@@ -87,31 +89,35 @@ namespace Nop.Plugin.Payments.PayPalMarketplace.Services
                         Granted = true
                     }
                 },
-                Products = new ProductName[]
+                Products = new string[]
                 {
-                    ProductName.EXPRESS_CHECKOUT
+                    ProductNames.EXPRESS_CHECKOUT
                 }
             };
-
-            var request = new PartnerReferralCreateRequest().RequestBody(referral);
-            PartnerReferralCreateResponse response = null;
-            HttpStatusCode responsecode;
+            return referral;
+        }
+        
+        public string GetActionUrl(PartnerReferral referral)
+        {
             try
             {
+                var request = new PartnerReferralCreateRequest().RequestBody(referral);
+                PartnerReferralCreateResponse response = null;
+                HttpStatusCode responsecode;
                 var task = _payPalHttpClient.Execute(request);
                 task.Wait(5000);
                 responsecode = task.Result.StatusCode;
                 response = task.Result.Result<PartnerReferralCreateResponse>();
-                return response?.Links?.SingleOrDefault(i => i.Rel.Equals("action_url")).Href;
+                return response?.Links?.SingleOrDefault(i => i.Rel.Equals("action_url"))?.Href;
             }
             catch (HttpException httpException)
             {
-                var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
-                _logger.Error($"payPalHttpClient.Execute failed (statuscode: { httpException.StatusCode}, pp-debugid: {debugId})", httpException.InnerException);
+                var debugId = httpException?.Headers?.GetValues("PayPal-Debug-Id")?.FirstOrDefault();
+                _logger.Error($"payPalHttpClient.Execute failed (statuscode: { httpException?.StatusCode}, pp-debugid: {debugId})");
             }
             catch (Exception e)
             {
-                _logger.Error($"payPalHttpClient.Execute failed for other reason {e.Message}", e.InnerException);
+                _logger.Error($"payPalHttpClient.Execute failed for other reason {e?.Message}");
             }
             return null;
         }
