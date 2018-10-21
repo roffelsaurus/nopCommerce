@@ -11,8 +11,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
     public partial class RouteProvider : IRouteProvider
     {
         public const string ONBOARDING = "StripeConnectOnBoarding";
-
-        #region Methods
+        public const string ONBOARDING_REDIRECT = "StripeConnectOnBoardingRedirect";
 
         /// <summary>
         /// Register routes
@@ -25,11 +24,12 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
             
             routeBuilder.MapRoute(ONBOARDING, "StripeConnect/OnBoarding",
                 new { controller = "OnBoarding", action = "Index" });
+
+            routeBuilder.MapRoute(ONBOARDING_REDIRECT, "StripeConnect/OnBoarding/Redirect",
+                new { controller = "OnBoarding", action = "Redirect" });
         }
-
-        #endregion
-
-        #region Properties
+        
+        
 
         /// <summary>
         /// Gets a priority of route provider
@@ -38,7 +38,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
         {
             get { return -1; }
         }
-
-        #endregion
+        
     }
 }

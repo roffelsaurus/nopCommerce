@@ -79,7 +79,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             {
                 LiveEnvironment = stripeConnectPaymentSettings.LiveEnvironment,
                 PublishableKey = stripeConnectPaymentSettings.PublishableKey,
-                SecretKey = stripeConnectPaymentSettings.SecretKey
+                SecretKey = stripeConnectPaymentSettings.SecretKey,
+                ClientId = stripeConnectPaymentSettings.ClientId
             };
 
             return View("~/Plugins/Payments.StripeConnect/Views/Configure.cshtml", model);
@@ -103,6 +104,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             stripeConnectPaymentSettings.LiveEnvironment = model.LiveEnvironment;
             stripeConnectPaymentSettings.PublishableKey = model.PublishableKey;
             stripeConnectPaymentSettings.SecretKey = model.SecretKey;
+            stripeConnectPaymentSettings.ClientId = model.ClientId;
 
             _settingService.SaveSetting(stripeConnectPaymentSettings);
             SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));

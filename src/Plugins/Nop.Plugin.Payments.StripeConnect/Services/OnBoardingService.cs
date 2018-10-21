@@ -1,8 +1,15 @@
-﻿using Nop.Core;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Nop.Core;
+using Nop.Core.Domain.Customers;
+using Nop.Plugin.Payments.StripeConnect.Infrastructure;
 using Nop.Services.Logging;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {
@@ -12,16 +19,66 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         private readonly IWorkContext _workContext;
         private readonly ILogger _logger;
         private readonly StripeConnectPaymentSettings _stripeConnectPaymentSettings;
+        private readonly IWebHelper _webHelper;
+        private readonly IUrlHelper _urlHelper;
+        private readonly ConcurrentDictionary<string, int> _onboardingCustomers; // key csrf token, customer id val
 
         public OnBoardingService(IWorkContext workContext,
             ILogger logger,
-            StripeConnectPaymentSettings stripeConnectPaymentSettings)
+            StripeConnectPaymentSettings stripeConnectPaymentSettings,
+            IWebHelper webHelper,
+            IUrlHelper urlHelper)
         {
             _workContext = workContext;
             _logger = logger;
             _stripeConnectPaymentSettings = stripeConnectPaymentSettings;
+            _webHelper = webHelper;
+            _urlHelper = urlHelper;
+            _onboardingCustomers = new ConcurrentDictionary<string, int>();
+        }
+
+        public bool ValidCSRFToken(string token)
+        {
+            if (!_onboardingCustomers.ContainsKey(token))
+                return false;
+
+            if (!_onboardingCustomers[token].Equals(_workContext.CurrentCustomer.Id))
+                return false;
+
+            return true;
+        }
+
+        public string NewOnboarding()
+        {
+            var csrftoken = GenerateString(16);
+            _onboardingCustomers.AddOrUpdate(csrftoken, _workContext.CurrentCustomer.Id, (_, id) => id);
+
+
+            var parameters = new Dictionary<string, string>()
+            {
+                ["client_id"] = _stripeConnectPaymentSettings.ClientId,
+                ["response_type"] = "code",
+                ["redirect_uri"] = _urlHelper.RouteUrl(RouteProvider.ONBOARDING_REDIRECT), // $"{_webHelper.GetStoreLocation()}Admin/PaymentStripeConnect/Configure";
+                ["scope"] = "read_write",
+                ["state"] = csrftoken,
+                ["stripe_landing"] = "register"
+            };
+            return QueryHelpers.AddQueryString("https://connect.stripe.com/oauth/authorize", parameters);
         }
         
+        private static string GenerateString(int length)
+        {
+            const string AllowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var bytes = new byte[length];
+
+            using (var random = RandomNumberGenerator.Create())
+            {
+                random.GetBytes(bytes);
+            }
+
+            return new string(bytes.Select(x => AllowableCharacters[x % AllowableCharacters.Length]).ToArray());
+        }
+
         //public PartnerReferral CreateNewReferral()
         //{
         //    var referral = new PartnerReferral()
@@ -86,7 +143,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         //    };
         //    return referral;
         //}
-        
+
         //public string GetActionUrl(PartnerReferral referral)
         //{
         //    try

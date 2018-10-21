@@ -65,7 +65,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             {
                 LiveEnvironment = false,
                 PublishableKey = "",
-                SecretKey = ""
+                SecretKey = "",
+                ClientId = ""
             });
 
 
@@ -78,7 +79,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Consent", "By clicking consent you agree to sharing data with ReTrade and Stripe. You will get the option to link your account as a merchant account with Retrade.");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.ConsentAction", "Consent");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.StripeMiniBrowerAction", "Open Stripe Mini Browser");
-
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken", "Invalid token");
+           
             base.Install();
         }
 
@@ -95,6 +97,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Consent");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.ConsentAction");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.StripeMiniBrowerAction");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken");
+
             base.Uninstall();
         }
         #endregion

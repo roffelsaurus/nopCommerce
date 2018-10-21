@@ -16,5 +16,9 @@ namespace Nop.Plugin.Payments.StripeConnect.Models
 
         [NopResourceDisplayName("Plugin.Payments.StripeConnect.Fields.PublishableKey")]
         public string PublishableKey { get; set; }
+
+
+        [NopResourceDisplayName("Plugin.Payments.StripeConnect.Fields.ClientId")]
+        public string ClientId { get; set; }
     }
 }
