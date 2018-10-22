@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\..\Presentation\Nop.Web\Plugins\Payments.StripeConnect\netcoreapp2.1\</OutputPath>
+    <OutputPath>..\..\Presentation\Nop.Web\Plugins\Payments.StripeConnect</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\..\Presentation\Nop.Web\Plugins\Payments.PayPalMarketplace</OutputPath>
+    <OutputPath>..\..\Presentation\Nop.Web\Plugins\Payments.StripeConnect</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
 
@@ -57,7 +57,7 @@
 
   <Target Name="FilterCopyLocalItems" AfterTargets="ResolveLockFileCopyLocalProjectDeps">
     <ItemGroup>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' != 'PayPal.NET.SDK' AND '%(Filename)' != 'BraintreeHttp-Dotnet'" />
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' != 'Stripe.net'" />
     </ItemGroup>
   </Target>
 

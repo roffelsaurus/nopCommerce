@@ -9,6 +9,8 @@ using Nop.Services.Payments;
 using Nop.Web.Framework.Infrastructure;
 using System;
 using System.Collections.Generic;
+using Nop.Plugin.Payments.StripeConnect.Data;
+
 
 namespace Nop.Plugin.Payments.StripeConnect
 {
@@ -17,14 +19,17 @@ namespace Nop.Plugin.Payments.StripeConnect
         private readonly ILocalizationService _localizationservice;
         private readonly IWebHelper _webhelper;
         private readonly ISettingService _settingService;
+        private readonly StripeConnectObjectContext _stripeConnectObjectContext;
 
         public StripeConnectPaymentProcessor(ILocalizationService localizationService,
             IWebHelper webHelper,
-            ISettingService settingService)
+            ISettingService settingService,
+            StripeConnectObjectContext stripeConnectObjectContext)
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
             _settingService = settingService;
+            _stripeConnectObjectContext = stripeConnectObjectContext;
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace Nop.Plugin.Payments.StripeConnect
         #region Install
         public override void Install()
         {
-            //_vendorPostHocObjectContext.Install();
+            _stripeConnectObjectContext.Install();
 
             _settingService.SaveSetting(new StripeConnectPaymentSettings
             {
@@ -77,16 +82,19 @@ namespace Nop.Plugin.Payments.StripeConnect
                 "Stripe Onboarding");
 
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Consent", "By clicking consent you agree to sharing data with ReTrade and Stripe. You will get the option to link your account as a merchant account with Retrade.");
-            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.ConsentAction", "Consent");
-            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.StripeMiniBrowerAction", "Open Stripe Mini Browser");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken", "Invalid token");
-           
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Success", "Successful onboarding!");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Fail", "Error during onboarding.");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.LinkText", "Click here to navigate to Stripe Onboarding");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded", "You are already onboarded!");
+
+
             base.Install();
         }
 
         public override void Uninstall()
         {
-            //_vendorPostHocObjectContext.Uninstall();
+            _stripeConnectObjectContext.Uninstall();
             _settingService.DeleteSetting<StripeConnectPaymentSettings>();
 
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.AccountNavStripeIntegration");
@@ -95,9 +103,13 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.SecretKey");
 
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Consent");
-            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.ConsentAction");
-            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.StripeMiniBrowerAction");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Success");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Fail");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.LinkText");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded");
+
+
 
             base.Uninstall();
         }

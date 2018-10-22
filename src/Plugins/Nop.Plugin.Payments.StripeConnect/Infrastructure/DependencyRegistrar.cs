@@ -1,8 +1,12 @@
 using Autofac;
+using Autofac.Core;
 using Nop.Core.Configuration;
+using Nop.Core.Data;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
+using Nop.Data;
 using Nop.Plugin.Payments.StripeConnect.Services;
+using Nop.Web.Framework.Infrastructure.Extensions;
 
 namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
 {
@@ -32,7 +36,17 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
             //    var env = c.Resolve<PayPalEnvironment>();
             //    return new PayPalHttpClient(env);
             //}).As<PayPalHttpClient>().SingleInstance();
-            builder.RegisterType<OnBoardingService>().As<IOnBoardingService>();
+            builder.RegisterType<OnBoardingService>().As<IOnBoardingService>().SingleInstance();
+
+            //data context
+            builder.RegisterPluginDataContext<Data.StripeConnectObjectContext>("nop_object_context_stripeconnect");
+
+            //override required repository with our custom context
+            builder.RegisterType<EfRepository<Domain.StripeCustomer>>().As<IRepository<Domain.StripeCustomer>>()
+                .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_stripeconnect"))
+                .InstancePerLifetimeScope();
+            builder.RegisterType<CustomerEntityService>().As<ICustomerEntityService>();
+
             //builder.RegisterType<ShippingByWeightByTotalService>().As<IShippingByWeightByTotalService>().InstancePerLifetimeScope();
 
             ////data context

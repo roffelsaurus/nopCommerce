@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
@@ -21,11 +22,13 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
         private readonly IOnBoardingService _onBoardingService;
         private readonly ILogger _logger;
         private readonly ILocalizationService _localizationService;
+        private readonly ICustomerEntityService _customerEntityService;
 
         public OnBoardingController(IWorkContext workContext,
             IOnBoardingService onBoardingService,
             ILogger logger,
-            ILocalizationService localizationService
+            ILocalizationService localizationService,
+            ICustomerEntityService customerEntityService
 
             )
         {
@@ -33,16 +36,23 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             _onBoardingService = onBoardingService;
             _logger = logger;
             _localizationService = localizationService;
+            _customerEntityService = customerEntityService;
         }
 
         [HttpsRequirement(SslRequirement.Yes)]
-        public IActionResult Index(bool consent = false)
+        public IActionResult Index()
         {
             if (!_workContext.CurrentCustomer.IsRegistered())
                 return Challenge();
-            var model = new OnBoardingModel();
+            var domain = _customerEntityService.GetOrCreate(_workContext.CurrentCustomer.Id);
 
-            model.OnBoardingUrl = _onBoardingService.NewOnboarding();
+            var model = new OnBoardingModel();
+            if (!string.IsNullOrEmpty(domain.AccessToken))
+            {
+                model.AlreadyOnboard = true;
+            }
+            else
+                model.OnBoardingUrl = _onBoardingService.NewOnboarding();
 
             return View("~/Plugins/Payments.StripeConnect/Views/OnBoarding.cshtml", model);
         }
@@ -53,8 +63,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             if (!_workContext.CurrentCustomer.IsRegistered())
                 return Challenge();
             var model = new OnBoardingModel();
-
-            if (!_onBoardingService.ValidCSRFToken(state))
+            var customerId = _onBoardingService.ConsumeCustomerMappingForCSRFToken(state);
+            if (customerId == null || !customerId.HasValue)
             {
                 ErrorNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken",
                 _workContext.WorkingLanguage.Id,
@@ -62,8 +72,19 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
                 return View("~/Plugins/Payments.StripeConnect/Views/OnBoarding.cshtml", model);
             }
 
-            // todo use code to get final code and persist it
-
+            var success = _onBoardingService.GetNewAccessToken(code, customerId.Value);
+            if (success)
+            {
+                SuccessNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Success",
+                _workContext.WorkingLanguage.Id,
+                defaultValue: "Onboarding successful!"));
+                model.AlreadyOnboard = true;
+            } else
+            {
+                ErrorNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Fail",
+                _workContext.WorkingLanguage.Id,
+                defaultValue: "Onboarding failed."));
+            }
 
             return View("~/Plugins/Payments.StripeConnect/Views/OnBoarding.cshtml", model);
         }

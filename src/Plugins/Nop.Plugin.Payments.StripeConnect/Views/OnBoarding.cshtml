@@ -22,34 +22,25 @@
 
 <div class="page account-page customer-info-page">
         <div class="page-title">
-            <h1>@T("Account.MyAccount") - @T("Plugin.Payments.StripeConnect.AccountNavPayPalIntegration")</h1>
+            <h1>@T("Account.MyAccount") - @T("Plugin.Payments.StripeConnect.AccountNavStripeIntegration")</h1>
         </div>
         <div class="page-body">
-            <div>@T("Plugin.Payments.StripeConnect.OnBoarding.Consent")</div>
-            @if (@Model.OnBoardingUrl != null)
-            {
-                @*<div dir="ltr" style="text-align: left;" trbidi="on">
-                    <script>
-                        (function (d, s, id) {
-                            var js, ref = d.getElementsByTagName(s)[0];
-                            if (!d.getElementById(id)) {
-                                js = d.createElement(s);
-                                js.id = id;
-                                js.async = true;
-                                js.src = "https://www.paypal.com/webapps/merchantboarding/js/lib/lightbox/partner.js";
-                                ref.parentNode.insertBefore(js, ref);
-                            }
-                        }(document, "script", "paypal-js"));
 
-                    </script>
-                    <a data-paypal-button="true" href="@Model.OnBoardingUrl&displayMode=minibrowser" target="PPFrame">@T("Plugin.Payments.StripeConnect.OnBoarding.PayPalMiniBrowerAction")</a>
-                </div>*@
+            @if (!Model.AlreadyOnboard)
+            {
+
+                @if (Model.OnBoardingUrl != null)
+                {
+                    <div>@T("Plugin.Payments.StripeConnect.OnBoarding.Consent")</div>
+                    <br />
+                    <a href="@Model.OnBoardingUrl">@T("Plugin.Payments.StripeConnect.OnBoarding.LinkText")</a>
+
+                }
+                // redirect error goes here?
             }
             else
             {
-                @*<a asp-controller="OnBoarding"
-                   asp-action="Index"
-                   asp-route-consent="@true">@T("Plugin.Payments.StripeConnect.OnBoarding.ConsentAction")</a>*@
+                <div>@T("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnBoarded")</div>
             }
 
         </div>

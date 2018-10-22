@@ -2,7 +2,8 @@
 {
     public interface IOnBoardingService
     {
+        bool GetNewAccessToken(string authCode, int customerId);
         string NewOnboarding();
-        bool ValidCSRFToken(string token);
+        int? ConsumeCustomerMappingForCSRFToken(string token);
     }
 }
