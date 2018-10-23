@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Stripe;
+using Nop.Web.Framework.Mvc.Routing;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {
@@ -23,7 +24,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         private readonly ILogger _logger;
         private readonly StripeConnectPaymentSettings _stripeConnectPaymentSettings;
         private readonly IWebHelper _webHelper;
-        private readonly IUrlHelper _urlHelper;
         private readonly HttpClient _httpClient;
         private readonly ICustomerEntityService _customerEntityService;
         private readonly ConcurrentDictionary<string, int> _onboardingCustomers; // key csrf token, customer id val
@@ -33,7 +33,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             ILogger logger,
             StripeConnectPaymentSettings stripeConnectPaymentSettings,
             IWebHelper webHelper,
-            IUrlHelper urlHelper,
 
             HttpClient httpClient,
             ICustomerEntityService customerEntityService)
@@ -42,7 +41,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             _logger = logger;
             _stripeConnectPaymentSettings = stripeConnectPaymentSettings;
             _webHelper = webHelper;
-            _urlHelper = urlHelper;
             _httpClient = httpClient;
             _customerEntityService = customerEntityService;
             _onboardingCustomers = new ConcurrentDictionary<string, int>();
@@ -73,7 +71,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             {
                 ["client_id"] = _stripeConnectPaymentSettings.ClientId,
                 ["response_type"] = "code",
-                ["redirect_uri"] = _urlHelper.RouteUrl(RouteProvider.ONBOARDING_REDIRECT), // $"{_webHelper.GetStoreLocation()}Admin/PaymentStripeConnect/Configure";
+                ["redirect_uri"] = $"{_webHelper.GetStoreLocation()}{RouteProvider.ONBOARDING_REDIRECT_ROUTE}",
                 ["scope"] = "read_write",
                 ["state"] = csrftoken,
                 ["stripe_landing"] = "register"

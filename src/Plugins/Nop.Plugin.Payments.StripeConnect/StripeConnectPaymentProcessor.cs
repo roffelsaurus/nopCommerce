@@ -37,7 +37,7 @@ namespace Nop.Plugin.Payments.StripeConnect
         /// </summary>
         public override string GetConfigurationPageUrl()
         {
-            return $"{_webhelper.GetStoreLocation()}Admin/PaymentStripeConnect/Configure";
+            return $"{_webhelper.GetStoreLocation()}Admin/StripeConnect/Configure";
         }
 
         #region WidgetPlugin Methods

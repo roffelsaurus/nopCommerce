@@ -15,7 +15,9 @@ using Nop.Web.Framework.Mvc.Filters;
 
 namespace Nop.Plugin.Payments.StripeConnect.Controllers
 {
-    public class PaymentStripeConnectController : BasePaymentController
+    [AuthorizeAdmin]
+    [Area(AreaNames.Admin)]
+    public class StripeConnectController : BasePaymentController
     {
         #region Fields
 
@@ -36,7 +38,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
 
         #region Ctor
 
-        public PaymentStripeConnectController(IWorkContext workContext,
+        public StripeConnectController(IWorkContext workContext,
             ISettingService settingService,
             IPaymentService paymentService,
             IOrderService orderService,
@@ -66,8 +68,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
         #endregion
 
 
-        [AuthorizeAdmin]
-        [Area(AreaNames.Admin)]
         public IActionResult Configure()
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManagePaymentMethods))
@@ -87,9 +87,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
         }
 
         [HttpPost]
-        [AuthorizeAdmin]
         [AdminAntiForgery]
-        [Area(AreaNames.Admin)]
         public IActionResult Configure(ConfigurationModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManagePaymentMethods))
