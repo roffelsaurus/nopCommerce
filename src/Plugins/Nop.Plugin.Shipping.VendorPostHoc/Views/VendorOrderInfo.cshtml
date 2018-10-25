@@ -1,0 +1,55 @@
+﻿@model OrderModel
+
+@using Nop.Core.Domain.Tax;
+@using Nop.Web.Areas.Admin.Models.Orders;
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-group">
+            <div class="col-md-3">
+                <nop-label asp-for="OrderTotal" />
+            </div>
+            <div class="col-md-9">
+                <div class="form-text-row">@Model.OrderTotal</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-3">
+                <div class="label-wrapper">
+                    <label class="control-label">@T("Admin.Orders.Fields.OrderSubtotal")</label>
+                    <div class="ico-help" title="@T("Admin.Orders.Fields.OrderSubtotal.Hint")">
+                        <i class="fa fa-question-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="form-text-row">
+                            @Model.OrderSubtotalExclTax <strong>@T("Admin.Orders.Fields.OrderSubtotalExclTax")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-3">
+                <div class="label-wrapper">
+                    <label class="control-label">@T("Admin.Orders.Fields.OrderShipping")</label>
+                    <div class="ico-help" title="@T("Admin.Orders.Fields.OrderShipping.Hint")">
+                        <i class="fa fa-question-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="form-text-row">
+                            @Model.OrderShippingExclTax <strong>@T("Admin.Orders.Fields.OrderShippingExclTax")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

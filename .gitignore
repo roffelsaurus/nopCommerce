@@ -180,3 +180,6 @@ src/Presentation/Nop.Web/wwwroot/images/uploaded/*
 src/Presentation/Nop.Web/wwwroot/files/exportimport/*
 !src/Presentation/Nop.Web/wwwroot/files/exportimport/Index.htm
 src/packages/*
+
+src/Presentation/Nop.Web/Themes
+!src/Presentation/Nop.Web/Themes/DefaultClean

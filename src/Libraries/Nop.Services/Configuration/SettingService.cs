@@ -20,27 +20,21 @@ namespace Nop.Services.Configuration
     {
         #region Fields
 
-        private readonly IRepository<Setting> _settingRepository;
         private readonly IEventPublisher _eventPublisher;
+        private readonly IRepository<Setting> _settingRepository;
         private readonly IStaticCacheManager _cacheManager;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="cacheManager">Static cache manager</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        /// <param name="settingRepository">Setting repository</param>
-        public SettingService(IStaticCacheManager cacheManager, 
-            IEventPublisher eventPublisher,
-            IRepository<Setting> settingRepository)
+        public SettingService(IEventPublisher eventPublisher,
+            IRepository<Setting> settingRepository,
+            IStaticCacheManager cacheManager)
         {
-            this._cacheManager = cacheManager;
             this._eventPublisher = eventPublisher;
             this._settingRepository = settingRepository;
+            this._cacheManager = cacheManager;
         }
 
         #endregion
@@ -54,8 +48,11 @@ namespace Nop.Services.Configuration
         public class SettingForCaching
         {
             public int Id { get; set; }
+
             public string Name { get; set; }
+
             public string Value { get; set; }
+
             public int StoreId { get; set; }
         }
 
@@ -83,12 +80,12 @@ namespace Nop.Services.Configuration
                 {
                     var resourceName = s.Name.ToLowerInvariant();
                     var settingForCaching = new SettingForCaching
-                            {
-                                Id = s.Id,
-                                Name = s.Name,
-                                Value = s.Value,
-                                StoreId = s.StoreId
-                            };
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Value = s.Value,
+                        StoreId = s.StoreId
+                    };
                     if (!dictionary.ContainsKey(resourceName))
                     {
                         //first setting
@@ -104,6 +101,7 @@ namespace Nop.Services.Configuration
                         dictionary[resourceName].Add(settingForCaching);
                     }
                 }
+
                 return dictionary;
             });
         }
@@ -256,20 +254,17 @@ namespace Nop.Services.Configuration
 
             var settings = GetAllSettingsCached();
             key = key.Trim().ToLowerInvariant();
-            if (settings.ContainsKey(key))
-            {
-                var settingsByKey = settings[key];
-                var setting = settingsByKey.FirstOrDefault(x => x.StoreId == storeId);
+            if (!settings.ContainsKey(key)) 
+                return null;
 
-                //load shared value?
-                if (setting == null && storeId > 0 && loadSharedValueIfNotFound)
-                    setting = settingsByKey.FirstOrDefault(x => x.StoreId == 0);
+            var settingsByKey = settings[key];
+            var setting = settingsByKey.FirstOrDefault(x => x.StoreId == storeId);
 
-                if (setting != null)
-                    return GetSettingById(setting.Id);
-            }
+            //load shared value?
+            if (setting == null && storeId > 0 && loadSharedValueIfNotFound)
+                setting = settingsByKey.FirstOrDefault(x => x.StoreId == 0);
 
-            return null;
+            return setting != null ? GetSettingById(setting.Id) : null;
         }
 
         /// <summary>
@@ -281,7 +276,7 @@ namespace Nop.Services.Configuration
         /// <param name="storeId">Store identifier</param>
         /// <param name="loadSharedValueIfNotFound">A value indicating whether a shared (for all stores) value should be loaded if a value specific for a certain is not found</param>
         /// <returns>Setting value</returns>
-        public virtual T GetSettingByKey<T>(string key, T defaultValue = default(T), 
+        public virtual T GetSettingByKey<T>(string key, T defaultValue = default(T),
             int storeId = 0, bool loadSharedValueIfNotFound = false)
         {
             if (string.IsNullOrEmpty(key))
@@ -289,20 +284,17 @@ namespace Nop.Services.Configuration
 
             var settings = GetAllSettingsCached();
             key = key.Trim().ToLowerInvariant();
-            if (settings.ContainsKey(key))
-            {
-                var settingsByKey = settings[key];
-                var setting = settingsByKey.FirstOrDefault(x => x.StoreId == storeId);
+            if (!settings.ContainsKey(key)) 
+                return defaultValue;
 
-                //load shared value?
-                if (setting == null && storeId > 0 && loadSharedValueIfNotFound)
-                    setting = settingsByKey.FirstOrDefault(x => x.StoreId == 0);
+            var settingsByKey = settings[key];
+            var setting = settingsByKey.FirstOrDefault(x => x.StoreId == storeId);
 
-                if (setting != null)
-                    return CommonHelper.To<T>(setting.Value);
-            }
+            //load shared value?
+            if (setting == null && storeId > 0 && loadSharedValueIfNotFound)
+                setting = settingsByKey.FirstOrDefault(x => x.StoreId == 0);
 
-            return defaultValue;
+            return setting != null ? CommonHelper.To<T>(setting.Value) : defaultValue;
         }
 
         /// <summary>
@@ -340,11 +332,11 @@ namespace Nop.Services.Configuration
         /// <param name="keySelector">Key selector</param>
         /// <param name="storeId">Store identifier</param>
         /// <returns>true -setting exists; false - does not exist</returns>
-        public virtual bool SettingExists<T, TPropType>(T settings, 
-            Expression<Func<T, TPropType>> keySelector, int storeId = 0) 
+        public virtual bool SettingExists<T, TPropType>(T settings,
+            Expression<Func<T, TPropType>> keySelector, int storeId = 0)
             where T : ISettings, new()
         {
-            var key = settings.GetSettingKey(keySelector);
+            var key = GetSettingKey(settings, keySelector);
 
             var setting = GetSettingByKey<string>(key, storeId: storeId);
             return setting != null;
@@ -359,6 +351,7 @@ namespace Nop.Services.Configuration
         {
             return (T)LoadSetting(typeof(T), storeId);
         }
+
         /// <summary>
         /// Load settings
         /// </summary>
@@ -414,13 +407,13 @@ namespace Nop.Services.Configuration
 
                 if (!TypeDescriptor.GetConverter(prop.PropertyType).CanConvertFrom(typeof(string)))
                     continue;
-                
+
                 var key = typeof(T).Name + "." + prop.Name;
                 var value = prop.GetValue(settings, null);
                 if (value != null)
                     SetSetting(prop.PropertyType, key, value, storeId, false);
                 else
-                    SetSetting(key, "", storeId, false);
+                    SetSetting(key, string.Empty, storeId, false);
             }
 
             //and now clear cache
@@ -440,8 +433,7 @@ namespace Nop.Services.Configuration
             Expression<Func<T, TPropType>> keySelector,
             int storeId = 0, bool clearCache = true) where T : ISettings, new()
         {
-            var member = keySelector.Body as MemberExpression;
-            if (member == null)
+            if (!(keySelector.Body is MemberExpression member))
             {
                 throw new ArgumentException(string.Format(
                     "Expression '{0}' refers to a method, not a property.",
@@ -456,16 +448,16 @@ namespace Nop.Services.Configuration
                        keySelector));
             }
 
-            var key = settings.GetSettingKey(keySelector);
+            var key = GetSettingKey(settings, keySelector);
             var value = (TPropType)propInfo.GetValue(settings, null);
             if (value != null)
                 SetSetting(key, value, storeId, clearCache);
             else
-                SetSetting(key, "", storeId, clearCache);
+                SetSetting(key, string.Empty, storeId, clearCache);
         }
 
         /// <summary>
-        /// Save settings object (per store). If the setting is not overridden per storem then it'll be delete
+        /// Save settings object (per store). If the setting is not overridden per store then it'll be delete
         /// </summary>
         /// <typeparam name="T">Entity type</typeparam>
         /// <typeparam name="TPropType">Property type</typeparam>
@@ -512,18 +504,18 @@ namespace Nop.Services.Configuration
         public virtual void DeleteSetting<T, TPropType>(T settings,
             Expression<Func<T, TPropType>> keySelector, int storeId = 0) where T : ISettings, new()
         {
-            var key = settings.GetSettingKey(keySelector);
+            var key = GetSettingKey(settings, keySelector);
             key = key.Trim().ToLowerInvariant();
 
             var allSettings = GetAllSettingsCached();
             var settingForCaching = allSettings.ContainsKey(key) ?
                 allSettings[key].FirstOrDefault(x => x.StoreId == storeId) : null;
-            if (settingForCaching != null)
-            {
-                //update
-                var setting = GetSettingById(settingForCaching.Id);
-                DeleteSetting(setting);
-            }
+            if (settingForCaching == null) 
+                return;
+
+            //update
+            var setting = GetSettingById(settingForCaching.Id);
+            DeleteSetting(setting);
         }
 
         /// <summary>
@@ -534,6 +526,27 @@ namespace Nop.Services.Configuration
             _cacheManager.RemoveByPattern(NopConfigurationDefaults.SettingsPatternCacheKey);
         }
 
+        /// <summary>
+        /// Get setting key (stored into database)
+        /// </summary>
+        /// <typeparam name="TSettings">Type of settings</typeparam>
+        /// <typeparam name="T">Property type</typeparam>
+        /// <param name="settings">Settings</param>
+        /// <param name="keySelector">Key selector</param>
+        /// <returns>Key</returns>
+        public virtual string GetSettingKey<TSettings, T>(TSettings settings, Expression<Func<TSettings, T>> keySelector)
+            where TSettings : ISettings, new()
+        {
+            if (!(keySelector.Body is MemberExpression member))
+                throw new ArgumentException($"Expression '{keySelector}' refers to a method, not a property.");
+
+            if (!(member.Member is PropertyInfo propInfo))
+                throw new ArgumentException($"Expression '{keySelector}' refers to a field, not a property.");
+
+            var key = $"{typeof(TSettings).Name}.{propInfo.Name}";
+            
+            return key;
+        }
         #endregion
     }
 }

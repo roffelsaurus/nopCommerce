@@ -17,12 +17,8 @@ namespace Nop.Services.Catalog
     [NotMapped]
     public class CategoryForCaching : Category, IEntityForCaching
     {
-        /// <summary>
-        /// Ctor
-        /// </summary>
         public CategoryForCaching()
         {
-
         }
 
         /// <summary>
@@ -54,9 +50,10 @@ namespace Nop.Services.Catalog
             CreatedOnUtc = c.CreatedOnUtc;
             UpdatedOnUtc = c.UpdatedOnUtc;
         }
-        
+
         [JsonIgnore]
         public override ICollection<DiscountCategoryMapping> DiscountCategoryMappings => throw new Exception("Entity for caching doesn't support navigation properties");
+
         [JsonIgnore]
         public override IList<Discount> AppliedDiscounts => throw new Exception("Entity for caching doesn't support navigation properties");
     }

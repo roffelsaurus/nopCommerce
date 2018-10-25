@@ -1,0 +1,9 @@
+﻿@using Nop.Plugin.Payments.StripeConnect.Infrastructure;
+
+
+<li class="customer-vendor-info">
+    <a href="@Url.RouteUrl(RouteProvider.ONBOARDING_NAME)"
+       class="@(Url.RouteUrl(ViewContext.RouteData.Values) == Url.RouteUrl(RouteProvider.ONBOARDING_NAME) ? "active" : "inactive")">
+        @T("Plugin.Payments.StripeConnect.AccountNavStripeIntegration")
+    </a>
+</li>

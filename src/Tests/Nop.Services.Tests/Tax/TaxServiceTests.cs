@@ -6,6 +6,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Shipping;
+using Nop.Core.Domain.Stores;
 using Nop.Core.Domain.Tax;
 using Nop.Services.Common;
 using Nop.Services.Directory;
@@ -23,7 +24,7 @@ namespace Nop.Services.Tests.Tax
     {
         private Mock<IAddressService> _addressService;
         private IWorkContext _workContext;
-        private IStoreContext _storeContext;
+        private Mock<IStoreContext> _storeContext;
         private TaxSettings _taxSettings;
         private Mock<IEventPublisher> _eventPublisher;
         private ITaxService _taxService;
@@ -35,6 +36,7 @@ namespace Nop.Services.Tests.Tax
         private CustomerSettings _customerSettings;
         private ShippingSettings _shippingSettings;
         private AddressSettings _addressSettings;
+        private Mock<IGenericAttributeService> _genericAttributeService;
 
         [SetUp]
         public new void SetUp()
@@ -45,7 +47,8 @@ namespace Nop.Services.Tests.Tax
             };
 
             _workContext = null;
-            _storeContext = null;
+            _storeContext = new Mock<IStoreContext>();
+            _storeContext.Setup(x => x.CurrentStore).Returns(new Store { Id = 1 });
 
             _addressService = new Mock<IAddressService>();
             //default tax address
@@ -61,14 +64,26 @@ namespace Nop.Services.Tests.Tax
             _stateProvinceService = new Mock<IStateProvinceService>();
             _logger = new Mock<ILogger>();
             _webHelper = new Mock<IWebHelper>();
+            _genericAttributeService = new Mock<IGenericAttributeService>();
 
             _customerSettings = new CustomerSettings();
             _shippingSettings = new ShippingSettings();
             _addressSettings = new AddressSettings();
 
-            _taxService = new TaxService(_addressService.Object, _workContext, _storeContext, _taxSettings,
-                pluginFinder, _geoLookupService.Object, _countryService.Object, _stateProvinceService.Object, _logger.Object, _webHelper.Object,
-                _customerSettings, _shippingSettings, _addressSettings);
+            _taxService = new TaxService(_addressSettings,
+                _customerSettings,
+                _addressService.Object,
+                _countryService.Object,
+                _genericAttributeService.Object,
+                _geoLookupService.Object,
+                _logger.Object,
+                pluginFinder,
+                _stateProvinceService.Object,
+                _storeContext.Object,
+                _webHelper.Object,
+                _workContext,
+                _shippingSettings,
+                _taxSettings);
         }
 
         [Test]

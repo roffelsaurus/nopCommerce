@@ -10,16 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Core.Domain.Catalog;
-using Nop.Core.Domain.Cms;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Orders;
-using Nop.Core.Domain.Payments;
-using Nop.Core.Domain.Shipping;
 using Nop.Core.Domain.Tax;
 using Nop.Core.Infrastructure;
 using Nop.Core.Plugins;
@@ -38,8 +34,8 @@ using Nop.Services.Seo;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Pickup;
 using Nop.Services.Stores;
-using Nop.Web.Areas.Admin.Infrastructure.Mapper.Extensions;
 using Nop.Services.Tax;
+using Nop.Web.Areas.Admin.Infrastructure.Mapper.Extensions;
 using Nop.Web.Areas.Admin.Models.Common;
 using Nop.Web.Areas.Admin.Models.Localization;
 using Nop.Web.Framework.Extensions;
@@ -74,31 +70,29 @@ namespace Nop.Web.Areas.Admin.Factories
         private readonly ICurrencyService _currencyService;
         private readonly ICustomerService _customerService;
         private readonly IDateTimeHelper _dateTimeHelper;
+        private readonly IExternalAuthenticationService _externalAuthenticationService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILanguageService _languageService;
         private readonly ILocalizationService _localizationService;
         private readonly IMaintenanceService _maintenanceService;
         private readonly IMeasureService _measureService;
+        private readonly INopFileProvider _fileProvider;
         private readonly IOrderService _orderService;
         private readonly IPaymentService _paymentService;
         private readonly IPluginFinder _pluginFinder;
         private readonly IProductService _productService;
         private readonly IReturnRequestService _returnRequestService;
         private readonly ISearchTermService _searchTermService;
+        private readonly IShippingService _shippingService;
         private readonly IStoreContext _storeContext;
         private readonly IStoreService _storeService;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly IUrlRecordService _urlRecordService;
         private readonly IWebHelper _webHelper;
+        private readonly IWidgetService _widgetService;
         private readonly IWorkContext _workContext;
-        private readonly INopFileProvider _fileProvider;
-
-        private readonly ExternalAuthenticationSettings _externalAuthenticationSettings;
         private readonly MeasureSettings _measureSettings;
-        private readonly PaymentSettings _paymentSettings;
-        private readonly ShippingSettings _shippingSettings;
         private readonly TaxSettings _taxSettings;
-        private readonly WidgetSettings _widgetSettings;
 
         #endregion
 
@@ -111,6 +105,7 @@ namespace Nop.Web.Areas.Admin.Factories
             ICurrencyService currencyService,
             ICustomerService customerService,
             IDateTimeHelper dateTimeHelper,
+            IExternalAuthenticationService externalAuthenticationService,
             INopFileProvider fileProvider,
             IHttpContextAccessor httpContextAccessor,
             ILanguageService languageService,
@@ -123,18 +118,16 @@ namespace Nop.Web.Areas.Admin.Factories
             IProductService productService,
             IReturnRequestService returnRequestService,
             ISearchTermService searchTermService,
+            IShippingService shippingService,
             IStoreContext storeContext,
             IStoreService storeService,
             IUrlHelperFactory urlHelperFactory,
             IUrlRecordService urlRecordService,
             IWebHelper webHelper,
+            IWidgetService widgetService,
             IWorkContext workContext,
-            ExternalAuthenticationSettings externalAuthenticationSettings,
             MeasureSettings measureSettings,
-            PaymentSettings paymentSettings,
-            ShippingSettings shippingSettings,
-            TaxSettings taxSettings,
-            WidgetSettings widgetSettings)
+            TaxSettings taxSettings)
         {
             this._adminAreaSettings = adminAreaSettings;
             this._catalogSettings = catalogSettings;
@@ -143,6 +136,7 @@ namespace Nop.Web.Areas.Admin.Factories
             this._currencyService = currencyService;
             this._customerService = customerService;
             this._dateTimeHelper = dateTimeHelper;
+            this._externalAuthenticationService = externalAuthenticationService;
             this._fileProvider = fileProvider;
             this._httpContextAccessor = httpContextAccessor;
             this._languageService = languageService;
@@ -155,18 +149,16 @@ namespace Nop.Web.Areas.Admin.Factories
             this._productService = productService;
             this._returnRequestService = returnRequestService;
             this._searchTermService = searchTermService;
+            this._shippingService = shippingService;
             this._storeContext = storeContext;
             this._storeService = storeService;
             this._urlHelperFactory = urlHelperFactory;
             this._urlRecordService = urlRecordService;
             this._webHelper = webHelper;
+            this._widgetService = widgetService;
             this._workContext = workContext;
-            this._externalAuthenticationSettings = externalAuthenticationSettings;
             this._measureSettings = measureSettings;
-            this._paymentSettings = paymentSettings;
-            this._shippingSettings = shippingSettings;
             this._taxSettings = taxSettings;
-            this._widgetSettings = widgetSettings;
         }
 
         #endregion
@@ -553,23 +545,23 @@ namespace Nop.Web.Areas.Admin.Factories
 
             var notEnabled = new List<string>();
 
-            foreach (var plugin in pluginDescriptors.Select(pd=>pd.Instance()))
+            foreach (var plugin in pluginDescriptors.Select(pd => pd.Instance()))
             {
                 var isEnabled = true;
 
                 switch (plugin)
                 {
                     case IPaymentMethod paymentMethod:
-                        isEnabled = paymentMethod.IsPaymentMethodActive(_paymentSettings);
+                        isEnabled = _paymentService.IsPaymentMethodActive(paymentMethod);
                         break;
 
                     case IShippingRateComputationMethod shippingRateComputationMethod:
                         isEnabled =
-                            shippingRateComputationMethod.IsShippingRateComputationMethodActive(_shippingSettings);
+                            _shippingService.IsShippingRateComputationMethodActive(shippingRateComputationMethod);
                         break;
 
                     case IPickupPointProvider pickupPointProvider:
-                        isEnabled = pickupPointProvider.IsPickupPointProviderActive(_shippingSettings);
+                        isEnabled = _shippingService.IsPickupPointProviderActive(pickupPointProvider);
                         break;
 
                     case ITaxProvider _:
@@ -578,14 +570,14 @@ namespace Nop.Web.Areas.Admin.Factories
                         break;
 
                     case IExternalAuthenticationMethod externalAuthenticationMethod:
-                        isEnabled = externalAuthenticationMethod.IsMethodActive(_externalAuthenticationSettings);
+                        isEnabled = _externalAuthenticationService.IsExternalAuthenticationMethodActive(externalAuthenticationMethod);
                         break;
 
                     case IWidgetPlugin widgetPlugin:
-                        isEnabled = widgetPlugin.IsWidgetActive(_widgetSettings);
+                        isEnabled = _widgetService.IsWidgetActive(widgetPlugin);
                         break;
 
-                    case IExchangeRateProvider  exchangeRateProvider :
+                    case IExchangeRateProvider exchangeRateProvider:
                         isEnabled = exchangeRateProvider.PluginDescriptor.SystemName == _currencySettings.ActiveExchangeRateProviderSystemName;
                         break;
                 }
@@ -663,7 +655,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     //we use a simple method because the more Jeff Atwood's solution doesn't work anymore 
                     //more info at https://blog.codinghorror.com/determining-build-date-the-hard-way/
                     loadedAssemblyModel.BuildDate = assembly.IsDynamic ? null : (DateTime?)TimeZoneInfo.ConvertTimeFromUtc(_fileProvider.GetLastWriteTimeUtc(assembly.Location), TimeZoneInfo.Local);
-                        
+
                 }
                 catch { }
                 model.LoadedAssemblies.Add(loadedAssemblyModel);
@@ -813,6 +805,8 @@ namespace Nop.Web.Areas.Admin.Factories
                     //fill in model values from the entity
                     var urlRecordModel = urlRecord.ToModel<UrlRecordModel>();
 
+                    urlRecordModel.Name = urlRecord.Slug;
+
                     //fill in additional values (not existing in the entity)
                     urlRecordModel.Language = urlRecord.LanguageId == 0
                         ? _localizationService.GetResource("Admin.System.SeNames.Language.Standard")
@@ -824,7 +818,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     switch (entityName)
                     {
                         case "blogpost":
-                            detailsUrl = urlHelper.Action("Edit", "Blog", new { id = urlRecord.EntityId });
+                            detailsUrl = urlHelper.Action("BlogPostEdit", "Blog", new { id = urlRecord.EntityId });
                             break;
                         case "category":
                             detailsUrl = urlHelper.Action("Edit", "Category", new { id = urlRecord.EntityId });
@@ -836,7 +830,7 @@ namespace Nop.Web.Areas.Admin.Factories
                             detailsUrl = urlHelper.Action("Edit", "Product", new { id = urlRecord.EntityId });
                             break;
                         case "newsitem":
-                            detailsUrl = urlHelper.Action("Edit", "News", new { id = urlRecord.EntityId });
+                            detailsUrl = urlHelper.Action("NewsItemEdit", "News", new { id = urlRecord.EntityId });
                             break;
                         case "topic":
                             detailsUrl = urlHelper.Action("Edit", "Topic", new { id = urlRecord.EntityId });

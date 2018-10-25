@@ -23,6 +23,7 @@ using Nop.Core.Domain.Tasks;
 using Nop.Core.Domain.Tax;
 using Nop.Core.Domain.Topics;
 using Nop.Core.Domain.Vendors;
+using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.Mapper;
 using Nop.Core.Plugins;
 using Nop.Services.Authentication.External;
@@ -213,7 +214,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.CreatedOn, options => options.Ignore())
                 .ForMember(model => model.EndDate, options => options.Ignore())
                 .ForMember(model => model.NotApprovedComments, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(entity.LanguageId, true, false)))
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, entity.LanguageId, true, false)))
                 .ForMember(model => model.StartDate, options => options.Ignore());
             CreateMap<BlogPostModel, BlogPost>()
                 .ForMember(entity => entity.BlogComments, options => options.Ignore())
@@ -306,7 +307,8 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.ShowSkuOnCatalogPages_OverrideForStore, options => options.Ignore())
                 .ForMember(model => model.ShowSkuOnProductDetailsPage_OverrideForStore, options => options.Ignore())
                 .ForMember(model => model.DisplayDatePreOrderAvailability_OverrideForStore, mo => mo.Ignore())
-                .ForMember(model => model.SortOptionSearchModel, options => options.Ignore());
+                .ForMember(model => model.SortOptionSearchModel, options => options.Ignore())
+                .ForMember(model => model.ReviewTypeSearchModel, options => options.Ignore());
             CreateMap<CatalogSettingsModel, CatalogSettings>()
                 .ForMember(settings => settings.AjaxProcessAttributeChange, options => options.Ignore())
                 .ForMember(settings => settings.CompareProductsNumber, options => options.Ignore())
@@ -331,7 +333,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.AvailableCategoryTemplates, options => options.Ignore())
                 .ForMember(model => model.Breadcrumb, options => options.Ignore())
                 .ForMember(model => model.CategoryProductSearchModel, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(0, true, false)));
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, 0, true, false)));
             CreateMap<CategoryModel, Category>()
                 .ForMember(entity => entity.CreatedOnUtc, options => options.Ignore())
                 .ForMember(entity => entity.Deleted, options => options.Ignore())
@@ -344,7 +346,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
             CreateMap<Manufacturer, ManufacturerModel>()
                 .ForMember(model => model.AvailableManufacturerTemplates, options => options.Ignore())
                 .ForMember(model => model.ManufacturerProductSearchModel, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(0, true, false)));
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, 0, true, false)));
             CreateMap<ManufacturerModel, Manufacturer>()
                 .ForMember(entity => entity.CreatedOnUtc, options => options.Ignore())
                 .ForMember(entity => entity.Deleted, options => options.Ignore())
@@ -354,6 +356,13 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
             CreateMap<ManufacturerTemplate, ManufacturerTemplateModel>();
             CreateMap<ManufacturerTemplateModel, ManufacturerTemplate>();
 
+            //Review type
+            CreateMap<ReviewType, ReviewTypeModel>()
+                .ForMember(dest => dest.Locales, mo => mo.Ignore())
+                .ForMember(dest => dest.CustomProperties, mo => mo.Ignore())
+                .ForMember(dest => dest.Form, mo => mo.Ignore());
+
+            //products
             CreateMap<Product, ProductModel>()
                 .ForMember(model => model.AddPictureModel, options => options.Ignore())
                 .ForMember(model => model.AddSpecificationAttributeModel, options => options.Ignore())
@@ -394,7 +403,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.RelatedProductSearchModel, options => options.Ignore())
                 .ForMember(model => model.SelectedCategoryIds, options => options.Ignore())
                 .ForMember(model => model.SelectedManufacturerIds, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(0, true, false)))
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, 0, true, false)))
                 .ForMember(model => model.StockQuantityHistory, options => options.Ignore())
                 .ForMember(model => model.StockQuantityHistorySearchModel, options => options.Ignore())
                 .ForMember(model => model.StockQuantityStr, options => options.Ignore())
@@ -524,7 +533,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
             CreateMap<AddressSettingsModel, AddressSettings>()
                 .ForMember(settings => settings.PreselectCountryIfOnlyOne, options => options.Ignore());
         }
-        
+
         /// <summary>
         /// Create customers maps 
         /// </summary>
@@ -857,7 +866,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.CreatedOn, options => options.Ignore())
                 .ForMember(model => model.EndDate, options => options.Ignore())
                 .ForMember(model => model.NotApprovedComments, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(entity.LanguageId, true, false)))
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, entity.LanguageId, true, false)))
                 .ForMember(model => model.StartDate, options => options.Ignore());
             CreateMap<NewsItemModel, NewsItem>()
                 .ForMember(entity => entity.CreatedOnUtc, options => options.Ignore())
@@ -1175,7 +1184,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
         {
             CreateMap<Topic, TopicModel>()
                 .ForMember(model => model.AvailableTopicTemplates, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(0, true, false)))
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, 0, true, false)))
                 .ForMember(model => model.Url, options => options.Ignore());
             CreateMap<TopicModel, Topic>();
 
@@ -1192,7 +1201,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.Address, options => options.Ignore())
                 .ForMember(model => model.AddVendorNoteMessage, options => options.Ignore())
                 .ForMember(model => model.AssociatedCustomers, options => options.Ignore())
-                .ForMember(model => model.SeName, options => options.MapFrom(entity => entity.GetSeName(0, true, false)))
+                .ForMember(model => model.SeName, options => options.MapFrom(entity => EngineContext.Current.Resolve<IUrlRecordService>().GetSeName(entity, 0, true, false)))
                 .ForMember(model => model.VendorAttributes, options => options.Ignore())
                 .ForMember(model => model.VendorNoteSearchModel, options => options.Ignore());
             CreateMap<VendorModel, Vendor>()

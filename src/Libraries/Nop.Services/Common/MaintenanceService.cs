@@ -22,26 +22,18 @@ namespace Nop.Services.Common
 
         private readonly IDataProvider _dataProvider;
         private readonly IDbContext _dbContext;
-        private readonly CommonSettings _commonSettings;
         private readonly INopFileProvider _fileProvider;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="dataProvider">Data provider</param>
-        /// <param name="dbContext">Database Context</param>
-        /// <param name="commonSettings">Common settings</param>
-        /// <param name="fileProvider">File provider</param>
-        public MaintenanceService(IDataProvider dataProvider, IDbContext dbContext,
-            CommonSettings commonSettings, INopFileProvider fileProvider)
+        public MaintenanceService(IDataProvider dataProvider,
+            IDbContext dbContext,
+            INopFileProvider fileProvider)
         {
             this._dataProvider = dataProvider;
             this._dbContext = dbContext;
-            this._commonSettings = commonSettings;
             this._fileProvider = fileProvider;
         }
 
@@ -67,7 +59,7 @@ namespace Nop.Services.Common
         /// </summary>
         protected virtual void CheckBackupSupported()
         {
-            if(!_dataProvider.BackupSupported)
+            if (!_dataProvider.BackupSupported)
                 throw new DataException("This database does not support backup");
         }
 
@@ -76,10 +68,10 @@ namespace Nop.Services.Common
         #region Methods
 
         /// <summary>
-        /// Get the current ident value
+        /// Get the current identity value
         /// </summary>
         /// <typeparam name="T">Entity</typeparam>
-        /// <returns>Integer ident; null if cannot get the result</returns>
+        /// <returns>Integer identity; null if cannot get the result</returns>
         public virtual int? GetTableIdent<T>() where T : BaseEntity
         {
             var tableName = _dbContext.GetTableName<T>();
@@ -90,18 +82,18 @@ namespace Nop.Services.Common
         }
 
         /// <summary>
-        /// Set table ident (is supported)
+        /// Set table identity (is supported)
         /// </summary>
         /// <typeparam name="T">Entity</typeparam>
-        /// <param name="ident">Ident value</param>
+        /// <param name="ident">Identity value</param>
         public virtual void SetTableIdent<T>(int ident) where T : BaseEntity
         {
             var currentIdent = GetTableIdent<T>();
-            if (currentIdent.HasValue && ident > currentIdent.Value)
-            {
-                var tableName = _dbContext.GetTableName<T>();
-                _dbContext.ExecuteSqlCommand($"DBCC CHECKIDENT([{tableName}], RESEED, {ident})");
-            }
+            if (!currentIdent.HasValue || ident <= currentIdent.Value) 
+                return;
+
+            var tableName = _dbContext.GetTableName<T>();
+            _dbContext.ExecuteSqlCommand($"DBCC CHECKIDENT([{tableName}], RESEED, {ident})");
         }
 
         /// <summary>
@@ -208,7 +200,7 @@ namespace Nop.Services.Common
                 CLOSE cur_reindex
                 DEALLOCATE cur_reindex";
 
-            _dbContext.ExecuteSqlCommand(commandText, true);            
+            _dbContext.ExecuteSqlCommand(commandText, true);
         }
 
         #endregion

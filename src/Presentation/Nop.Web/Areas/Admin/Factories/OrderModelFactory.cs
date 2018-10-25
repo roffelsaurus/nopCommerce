@@ -27,7 +27,6 @@ using Nop.Services.Orders;
 using Nop.Services.Payments;
 using Nop.Services.Security;
 using Nop.Services.Shipping;
-using Nop.Services.Shipping.Tracking;
 using Nop.Services.Stores;
 using Nop.Services.Tax;
 using Nop.Services.Vendors;
@@ -35,6 +34,7 @@ using Nop.Web.Areas.Admin.Infrastructure.Mapper.Extensions;
 using Nop.Web.Areas.Admin.Models.Catalog;
 using Nop.Web.Areas.Admin.Models.Common;
 using Nop.Web.Areas.Admin.Models.Orders;
+using Nop.Web.Areas.Admin.Models.Reports;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Web.Areas.Admin.Factories
@@ -51,8 +51,6 @@ namespace Nop.Web.Areas.Admin.Factories
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IAddressAttributeFormatter _addressAttributeFormatter;
         private readonly IAddressAttributeModelFactory _addressAttributeModelFactory;
-        private readonly IAddressAttributeParser _addressAttributeParser;
-        private readonly IAddressAttributeService _addressAttributeService;
         private readonly IAffiliateService _affiliateService;
         private readonly IBaseAdminModelFactory _baseAdminModelFactory;
         private readonly ICountryService _countryService;
@@ -71,7 +69,6 @@ namespace Nop.Web.Areas.Admin.Factories
         private readonly IPictureService _pictureService;
         private readonly IPriceCalculationService _priceCalculationService;
         private readonly IPriceFormatter _priceFormatter;
-        private readonly IProductAttributeParser _productAttributeParser;
         private readonly IProductAttributeService _productAttributeService;
         private readonly IProductService _productService;
         private readonly IReturnRequestService _returnRequestService;
@@ -96,8 +93,6 @@ namespace Nop.Web.Areas.Admin.Factories
             IActionContextAccessor actionContextAccessor,
             IAddressAttributeFormatter addressAttributeFormatter,
             IAddressAttributeModelFactory addressAttributeModelFactory,
-            IAddressAttributeParser addressAttributeParser,
-            IAddressAttributeService addressAttributeService,
             IAffiliateService affiliateService,
             IBaseAdminModelFactory baseAdminModelFactory,
             ICountryService countryService,
@@ -116,7 +111,6 @@ namespace Nop.Web.Areas.Admin.Factories
             IPictureService pictureService,
             IPriceCalculationService priceCalculationService,
             IPriceFormatter priceFormatter,
-            IProductAttributeParser productAttributeParser,
             IProductAttributeService productAttributeService,
             IProductService productService,
             IReturnRequestService returnRequestService,
@@ -137,8 +131,6 @@ namespace Nop.Web.Areas.Admin.Factories
             this._actionContextAccessor = actionContextAccessor;
             this._addressAttributeFormatter = addressAttributeFormatter;
             this._addressAttributeModelFactory = addressAttributeModelFactory;
-            this._addressAttributeParser = addressAttributeParser;
-            this._addressAttributeService = addressAttributeService;
             this._affiliateService = affiliateService;
             this._baseAdminModelFactory = baseAdminModelFactory;
             this._countryService = countryService;
@@ -157,7 +149,6 @@ namespace Nop.Web.Areas.Admin.Factories
             this._pictureService = pictureService;
             this._priceCalculationService = priceCalculationService;
             this._priceFormatter = priceFormatter;
-            this._productAttributeParser = productAttributeParser;
             this._productAttributeService = productAttributeService;
             this._productService = productService;
             this._returnRequestService = returnRequestService;
@@ -261,11 +252,11 @@ namespace Nop.Web.Areas.Admin.Factories
                 };
 
                 //fill in additional values (not existing in the entity)
-                orderItemModel.Sku = orderItem.Product.FormatSku(orderItem.AttributesXml, _productAttributeParser);
+                orderItemModel.Sku = _productService.FormatSku(orderItem.Product, orderItem.AttributesXml);
                 orderItemModel.VendorName = _vendorService.GetVendorById(orderItem.Product.VendorId)?.Name;
 
                 //picture
-                var orderItemPicture = orderItem.Product.GetProductPicture(orderItem.AttributesXml, _pictureService, _productAttributeParser);
+                var orderItemPicture = _pictureService.GetProductPicture(orderItem.Product, orderItem.AttributesXml);
                 orderItemModel.PictureThumbnailUrl = _pictureService.GetPictureUrl(orderItemPicture, 75);
 
                 //license file
@@ -297,17 +288,16 @@ namespace Nop.Web.Areas.Admin.Factories
                 if (orderItem.Product.IsRecurring)
                 {
                     orderItemModel.RecurringInfo = string.Format(_localizationService.GetResource("Admin.Orders.Products.RecurringPeriod"),
-                        orderItem.Product.RecurringCycleLength,
-                        orderItem.Product.RecurringCyclePeriod.GetLocalizedEnum(_localizationService, _workContext));
+                        orderItem.Product.RecurringCycleLength, _localizationService.GetLocalizedEnum(orderItem.Product.RecurringCyclePeriod));
                 }
 
                 //rental info
                 if (orderItem.Product.IsRental)
                 {
                     var rentalStartDate = orderItem.RentalStartDateUtc.HasValue
-                        ? orderItem.Product.FormatRentalDate(orderItem.RentalStartDateUtc.Value) : string.Empty;
+                        ? _productService.FormatRentalDate(orderItem.Product, orderItem.RentalStartDateUtc.Value) : string.Empty;
                     var rentalEndDate = orderItem.RentalEndDateUtc.HasValue
-                        ? orderItem.Product.FormatRentalDate(orderItem.RentalEndDateUtc.Value) : string.Empty;
+                        ? _productService.FormatRentalDate(orderItem.Product, orderItem.RentalEndDateUtc.Value) : string.Empty;
                     orderItemModel.RentalInfo = string.Format(_localizationService.GetResource("Order.Rental.FormattedDate"),
                         rentalStartDate, rentalEndDate);
                 }
@@ -404,10 +394,10 @@ namespace Nop.Web.Areas.Admin.Factories
 
             //tax
             model.Tax = _priceFormatter.FormatPrice(order.OrderTax, true, false);
-            var taxRates = order.TaxRatesDictionary;
+            var taxRates = _orderService.ParseTaxRates(order, order.TaxRates);
             var displayTaxRates = _taxSettings.DisplayTaxRates && taxRates.Any();
             var displayTax = !displayTaxRates;
-            foreach (var tr in order.TaxRatesDictionary)
+            foreach (var tr in taxRates)
             {
                 model.TaxRates.Add(new OrderModel.TaxRate
                 {
@@ -523,7 +513,7 @@ namespace Nop.Web.Areas.Admin.Factories
             //payment method info
             var pm = _paymentService.LoadPaymentMethodBySystemName(order.PaymentMethodSystemName);
             model.PaymentMethod = pm != null ? pm.PluginDescriptor.FriendlyName : order.PaymentMethodSystemName;
-            model.PaymentStatus = order.PaymentStatus.GetLocalizedEnum(_localizationService, _workContext);
+            model.PaymentStatus = _localizationService.GetLocalizedEnum(order.PaymentStatus);
 
             //payment method buttons
             model.CanCancelOrder = _orderProcessingService.CanCancelOrder(order);
@@ -556,13 +546,13 @@ namespace Nop.Web.Areas.Admin.Factories
             if (order == null)
                 throw new ArgumentNullException(nameof(order));
 
-            model.ShippingStatus = order.ShippingStatus.GetLocalizedEnum(_localizationService, _workContext);
+            model.ShippingStatus = _localizationService.GetLocalizedEnum(order.ShippingStatus);
             if (order.ShippingStatus == ShippingStatus.ShippingNotRequired)
                 return;
 
             model.IsShippable = true;
             model.ShippingMethod = order.ShippingMethod;
-            model.CanAddNewShipments = order.HasItemsToAddToShipment();
+            model.CanAddNewShipments = _orderService.HasItemsToAddToShipment(order);
             model.PickUpInStore = order.PickUpInStore;
             if (!order.PickUpInStore)
             {
@@ -672,12 +662,12 @@ namespace Nop.Web.Areas.Admin.Factories
             model.OrderItemId = orderItem.Id;
             model.ProductId = orderItem.ProductId;
             model.ProductName = orderItem.Product.Name;
-            model.Sku = orderItem.Product.FormatSku(orderItem.AttributesXml, _productAttributeParser);
+            model.Sku = _productService.FormatSku(orderItem.Product, orderItem.AttributesXml);
             model.AttributeInfo = orderItem.AttributeDescription;
             model.ShipSeparately = orderItem.Product.ShipSeparately;
             model.QuantityOrdered = orderItem.Quantity;
-            model.QuantityInAllShipments = orderItem.GetTotalNumberOfItemsInAllShipment();
-            model.QuantityToAdd = orderItem.GetTotalNumberOfItemsCanBeAddedToShipment();
+            model.QuantityInAllShipments = _orderService.GetTotalNumberOfItemsInAllShipment(orderItem);
+            model.QuantityToAdd = _orderService.GetTotalNumberOfItemsCanBeAddedToShipment(orderItem);
 
             var baseWeight = _measureService.GetMeasureWeightById(_measureSettings.BaseWeightId)?.Name;
             var baseDimension = _measureService.GetMeasureDimensionById(_measureSettings.BaseDimensionId)?.Name;
@@ -689,8 +679,10 @@ namespace Nop.Web.Areas.Admin.Factories
             if (!orderItem.Product.IsRental)
                 return;
 
-            var rentalStartDate = orderItem.RentalStartDateUtc.HasValue ? orderItem.Product.FormatRentalDate(orderItem.RentalStartDateUtc.Value) : string.Empty;
-            var rentalEndDate = orderItem.RentalEndDateUtc.HasValue ? orderItem.Product.FormatRentalDate(orderItem.RentalEndDateUtc.Value) : string.Empty;
+            var rentalStartDate = orderItem.RentalStartDateUtc.HasValue
+                ? _productService.FormatRentalDate(orderItem.Product, orderItem.RentalStartDateUtc.Value) : string.Empty;
+            var rentalEndDate = orderItem.RentalEndDateUtc.HasValue
+                ? _productService.FormatRentalDate(orderItem.Product, orderItem.RentalEndDateUtc.Value) : string.Empty;
             model.RentalInfo = string.Format(_localizationService.GetResource("Order.Rental.FormattedDate"), rentalStartDate, rentalEndDate);
         }
 
@@ -704,7 +696,7 @@ namespace Nop.Web.Areas.Admin.Factories
             if (models == null)
                 throw new ArgumentNullException(nameof(models));
 
-            var shipmentTracker = shipment.GetShipmentTracker(_shippingService, _shippingSettings);
+            var shipmentTracker = _shipmentService.GetShipmentTracker(shipment);
             var shipmentEvents = shipmentTracker.GetShipmentEvents(shipment.TrackingNumber);
             if (shipmentEvents == null)
                 return;
@@ -719,7 +711,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 };
                 var shipmentEventCountry = _countryService.GetCountryByTwoLetterIsoCode(shipmentEvent.CountryCode);
                 shipmentStatusEventModel.Country = shipmentEventCountry != null
-                    ? shipmentEventCountry.GetLocalized(x => x.Name) : shipmentEvent.CountryCode;
+                    ? _localizationService.GetLocalized(shipmentEventCountry, x => x.Name) : shipmentEvent.CountryCode;
                 models.Add(shipmentStatusEventModel);
             }
         }
@@ -931,9 +923,9 @@ namespace Nop.Web.Areas.Admin.Factories
 
                     //fill in additional values (not existing in the entity)
                     orderModel.StoreName = _storeService.GetStoreById(order.StoreId)?.Name ?? "Deleted";
-                    orderModel.OrderStatus = order.OrderStatus.GetLocalizedEnum(_localizationService, _workContext);
-                    orderModel.PaymentStatus = order.PaymentStatus.GetLocalizedEnum(_localizationService, _workContext);
-                    orderModel.ShippingStatus = order.ShippingStatus.GetLocalizedEnum(_localizationService, _workContext);
+                    orderModel.OrderStatus = _localizationService.GetLocalizedEnum(order.OrderStatus);
+                    orderModel.PaymentStatus = _localizationService.GetLocalizedEnum(order.PaymentStatus);
+                    orderModel.ShippingStatus = _localizationService.GetLocalizedEnum(order.ShippingStatus);
                     orderModel.OrderTotal = _priceFormatter.FormatPrice(order.OrderTotal, true, false);
 
                     return orderModel;
@@ -1041,17 +1033,17 @@ namespace Nop.Web.Areas.Admin.Factories
                     CheckoutAttributeInfo = order.CheckoutAttributeDescription
                 };
 
-                model.OrderStatus = order.OrderStatus.GetLocalizedEnum(_localizationService, _workContext);
+                model.OrderStatus = _localizationService.GetLocalizedEnum(order.OrderStatus);
                 model.StoreName = _storeService.GetStoreById(order.StoreId)?.Name ?? "Deleted";
                 model.CustomerInfo = order.Customer.IsRegistered() ? order.Customer.Email : _localizationService.GetResource("Admin.Customers.Guest");
                 model.CreatedOn = _dateTimeHelper.ConvertToUserTime(order.CreatedOnUtc, DateTimeKind.Utc);
-                model.CustomValues = order.DeserializeCustomValues();
+                model.CustomValues = _paymentService.DeserializeCustomValues(order);
 
                 var affiliate = _affiliateService.GetAffiliateById(order.AffiliateId);
                 if (affiliate != null)
                 {
                     model.AffiliateId = affiliate.Id;
-                    model.AffiliateName = affiliate.GetFullName();
+                    model.AffiliateName = _affiliateService.GetAffiliateFullName(affiliate);
                 }
 
                 //prepare order totals
@@ -1304,7 +1296,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 searchModel.LoadNotShipped,
                 startDateValue,
                 endDateValue,
-                searchModel.Page - 1, 
+                searchModel.Page - 1,
                 searchModel.PageSize);
 
             //prepare list model
@@ -1402,7 +1394,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 //prepare shipment events
                 if (!string.IsNullOrEmpty(shipment.TrackingNumber))
                 {
-                    var shipmentTracker = shipment.GetShipmentTracker(_shippingService, _shippingSettings);
+                    var shipmentTracker = _shipmentService.GetShipmentTracker(shipment);
                     if (shipmentTracker != null)
                     {
                         model.TrackingNumberUrl = shipmentTracker.GetUrl(shipment.TrackingNumber);
@@ -1627,7 +1619,7 @@ namespace Nop.Web.Areas.Admin.Factories
                         OrderId = orderNote.OrderId,
                         DownloadId = orderNote.DownloadId,
                         DisplayToCustomer = orderNote.DisplayToCustomer,
-                        Note = orderNote.FormatOrderNoteText()
+                        Note = _orderService.FormatOrderNoteText(orderNote)
                     };
 
                     //convert dates to the user time
@@ -1702,247 +1694,6 @@ namespace Nop.Web.Areas.Admin.Factories
         }
 
         /// <summary>
-        /// Prepare bestseller search model
-        /// </summary>
-        /// <param name="searchModel">Bestseller search model</param>
-        /// <returns>Bestseller search model</returns>
-        public virtual BestsellerSearchModel PrepareBestsellerSearchModel(BestsellerSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            searchModel.IsLoggedInAsVendor = _workContext.CurrentVendor != null;
-
-            //prepare available stores
-            _baseAdminModelFactory.PrepareStores(searchModel.AvailableStores);
-
-            //prepare available order statuses
-            _baseAdminModelFactory.PrepareOrderStatuses(searchModel.AvailableOrderStatuses);
-
-            //prepare available payment statuses
-            _baseAdminModelFactory.PreparePaymentStatuses(searchModel.AvailablePaymentStatuses);
-
-            //prepare available categories
-            _baseAdminModelFactory.PrepareCategories(searchModel.AvailableCategories);
-
-            //prepare available manufacturers
-            _baseAdminModelFactory.PrepareManufacturers(searchModel.AvailableManufacturers);
-
-            //prepare available billing countries
-            searchModel.AvailableCountries = _countryService.GetAllCountriesForBilling(showHidden: true)
-                .Select(country => new SelectListItem { Text = country.Name, Value = country.Id.ToString() }).ToList();
-            searchModel.AvailableCountries.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-
-            //prepare available vendors
-            _baseAdminModelFactory.PrepareVendors(searchModel.AvailableVendors);
-
-            //prepare page parameters
-            searchModel.SetGridPageSize();
-
-            return searchModel;
-        }
-
-        /// <summary>
-        /// Prepare paged bestseller list model
-        /// </summary>
-        /// <param name="searchModel">Bestseller search model</param>
-        /// <returns>Bestseller list model</returns>
-        public virtual BestsellerListModel PrepareBestsellerListModel(BestsellerSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            //get parameters to filter bestsellers
-            var orderStatus = searchModel.OrderStatusId > 0 ? (OrderStatus?)searchModel.OrderStatusId : null;
-            var paymentStatus = searchModel.PaymentStatusId > 0 ? (PaymentStatus?)searchModel.PaymentStatusId : null;
-            if (_workContext.CurrentVendor != null)
-                searchModel.VendorId = _workContext.CurrentVendor.Id;
-            var startDateValue = !searchModel.StartDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.StartDate.Value, _dateTimeHelper.CurrentTimeZone);
-            var endDateValue = !searchModel.EndDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.EndDate.Value, _dateTimeHelper.CurrentTimeZone).AddDays(1);
-
-            //get bestsellers
-            var bestsellers = _orderReportService.BestSellersReport(showHidden: true,
-                createdFromUtc: startDateValue,
-                createdToUtc: endDateValue,
-                os: orderStatus,
-                ps: paymentStatus,
-                billingCountryId: searchModel.BillingCountryId,
-                orderBy: 2,
-                vendorId: searchModel.VendorId,
-                categoryId: searchModel.CategoryId,
-                manufacturerId: searchModel.ManufacturerId,
-                storeId: searchModel.StoreId,
-                pageIndex: searchModel.Page - 1, pageSize: searchModel.PageSize);
-
-            //prepare list model
-            var model = new BestsellerListModel
-            {
-                Data = bestsellers.Select(bestseller =>
-                {
-                    //fill in model values from the entity
-                    var bestsellerModel = new BestsellerModel
-                    {
-                        ProductId = bestseller.ProductId,
-                        TotalQuantity = bestseller.TotalQuantity
-                    };
-
-                    //fill in additional values (not existing in the entity)
-                    bestsellerModel.ProductName = _productService.GetProductById(bestseller.ProductId)?.Name;
-                    bestsellerModel.TotalAmount = _priceFormatter.FormatPrice(bestseller.TotalAmount, true, false);
-
-                    return bestsellerModel;
-                }),
-                Total = bestsellers.TotalCount
-            };
-
-            return model;
-        }
-
-        /// <summary>
-        /// Prepare never sold report search model
-        /// </summary>
-        /// <param name="searchModel">Never sold report search model</param>
-        /// <returns>Never sold report search model</returns>
-        public virtual NeverSoldReportSearchModel PrepareNeverSoldReportSearchModel(NeverSoldReportSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            searchModel.IsLoggedInAsVendor = _workContext.CurrentVendor != null;
-
-            //prepare available stores
-            _baseAdminModelFactory.PrepareStores(searchModel.AvailableStores);
-
-            //prepare available categories
-            _baseAdminModelFactory.PrepareCategories(searchModel.AvailableCategories);
-
-            //prepare available manufacturers
-            _baseAdminModelFactory.PrepareManufacturers(searchModel.AvailableManufacturers);
-
-            //prepare available vendors
-            _baseAdminModelFactory.PrepareVendors(searchModel.AvailableVendors);
-
-            //prepare page parameters
-            searchModel.SetGridPageSize();
-
-            return searchModel;
-        }
-
-        /// <summary>
-        /// Prepare paged never sold report list model
-        /// </summary>
-        /// <param name="searchModel">Never sold report search model</param>
-        /// <returns>Never sold report list model</returns>
-        public virtual NeverSoldReportListModel PrepareNeverSoldReportListModel(NeverSoldReportSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            //get parameters to filter neverSoldReports
-            if (_workContext.CurrentVendor != null)
-                searchModel.SearchVendorId = _workContext.CurrentVendor.Id;
-            var startDateValue = !searchModel.StartDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.StartDate.Value, _dateTimeHelper.CurrentTimeZone);
-            var endDateValue = !searchModel.EndDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.EndDate.Value, _dateTimeHelper.CurrentTimeZone).AddDays(1);
-
-            //get report items
-            var items = _orderReportService.ProductsNeverSold(showHidden: true,
-                vendorId: searchModel.SearchVendorId,
-                storeId: searchModel.SearchStoreId,
-                categoryId: searchModel.SearchCategoryId,
-                manufacturerId: searchModel.SearchManufacturerId,
-                createdFromUtc: startDateValue,
-                createdToUtc: endDateValue,
-                pageIndex: searchModel.Page - 1, pageSize: searchModel.PageSize);
-
-            //prepare list model
-            var model = new NeverSoldReportListModel
-            {
-                //fill in model values from the entity
-                Data = items.Select(item => new NeverSoldReportModel
-                {
-                    ProductId = item.Id,
-                    ProductName = item.Name
-                }),
-                Total = items.TotalCount
-            };
-
-            return model;
-        }
-
-        /// <summary>
-        /// Prepare country report search model
-        /// </summary>
-        /// <param name="searchModel">Country report search model</param>
-        /// <returns>Country report search model</returns>
-        public virtual CountryReportSearchModel PrepareCountryReportSearchModel(CountryReportSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            //prepare available order statuses
-            _baseAdminModelFactory.PrepareOrderStatuses(searchModel.AvailableOrderStatuses);
-
-            //prepare available payment statuses
-            _baseAdminModelFactory.PreparePaymentStatuses(searchModel.AvailablePaymentStatuses);
-
-            //prepare page parameters
-            searchModel.SetGridPageSize();
-
-            return searchModel;
-        }
-
-        /// <summary>
-        /// Prepare paged country report list model
-        /// </summary>
-        /// <param name="searchModel">Country report search model</param>
-        /// <returns>Country report list model</returns>
-        public virtual CountryReportListModel PrepareCountryReportListModel(CountryReportSearchModel searchModel)
-        {
-            if (searchModel == null)
-                throw new ArgumentNullException(nameof(searchModel));
-
-            //get parameters to filter countryReports
-            var orderStatus = searchModel.OrderStatusId > 0 ? (OrderStatus?)searchModel.OrderStatusId : null;
-            var paymentStatus = searchModel.PaymentStatusId > 0 ? (PaymentStatus?)searchModel.PaymentStatusId : null;
-            var startDateValue = !searchModel.StartDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.StartDate.Value, _dateTimeHelper.CurrentTimeZone);
-            var endDateValue = !searchModel.EndDate.HasValue ? null
-                : (DateTime?)_dateTimeHelper.ConvertToUtcTime(searchModel.EndDate.Value, _dateTimeHelper.CurrentTimeZone).AddDays(1);
-
-            //get items
-            var items = _orderReportService.GetCountryReport(os: orderStatus,
-                ps: paymentStatus,
-                startTimeUtc: startDateValue,
-                endTimeUtc: endDateValue);
-
-            //prepare list model
-            var model = new CountryReportListModel
-            {
-                Data = items.PaginationByRequestModel(searchModel).Select(item =>
-                {
-                    //fill in model values from the entity
-                    var countryReportModel = new CountryReportModel
-                    {
-                        TotalOrders = item.TotalOrders
-                    };
-
-                    //fill in additional values (not existing in the entity)
-                    countryReportModel.SumOrders = _priceFormatter.FormatPrice(item.SumOrders, true, false);
-                    countryReportModel.CountryName = _countryService.GetCountryById(item.CountryId ?? 0)?.Name;
-
-                    return countryReportModel;
-                }),
-                Total = items.Count
-            };
-
-            return model;
-        }
-
-        /// <summary>
         /// Prepare order average line summary report list model
         /// </summary>
         /// <returns>Order average line summary report list model</returns>
@@ -1962,7 +1713,7 @@ namespace Nop.Web.Areas.Admin.Factories
             {
                 Data = report.Select(reportItem => new OrderAverageReportModel
                 {
-                    OrderStatus = reportItem.OrderStatus.GetLocalizedEnum(_localizationService, _workContext),
+                    OrderStatus = _localizationService.GetLocalizedEnum(reportItem.OrderStatus),
                     SumTodayOrders = _priceFormatter.FormatPrice(reportItem.SumTodayOrders, true, false),
                     SumThisWeekOrders = _priceFormatter.FormatPrice(reportItem.SumThisWeekOrders, true, false),
                     SumThisMonthOrders = _priceFormatter.FormatPrice(reportItem.SumThisMonthOrders, true, false),

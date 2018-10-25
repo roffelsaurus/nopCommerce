@@ -1,18 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Orders;
 using Nop.Data;
 using Nop.Services.Catalog;
+using Nop.Services.Configuration;
 using Nop.Services.Directory;
 using Nop.Services.Events;
 using Nop.Services.Localization;
+using Nop.Services.Logging;
 using Nop.Services.Media;
 using Nop.Services.Tax;
 using Nop.Tests;
@@ -35,7 +39,7 @@ namespace Nop.Services.Tests.Catalog
 
         private Mock<IWorkContext> _workContext;
         private Mock<ICurrencyService> _currencyService;
-        private Mock<ILocalizationService> _localizationService;
+        private ILocalizationService _localizationService;
         private Mock<ITaxService> _taxService;
         private Mock<IPriceFormatter> _priceFormatter;
         private Mock<IPriceCalculationService> _priceCalculationService;
@@ -201,15 +205,15 @@ namespace Nop.Services.Tests.Catalog
             _eventPublisher = new Mock<IEventPublisher>();
             _eventPublisher.Setup(x => x.Publish(It.IsAny<object>()));
 
-            var cacheManager = new NopNullCache();
+            var cacheManager = new TestMemoryCacheManager(new Mock<IMemoryCache>().Object);
 
             _productAttributeService = new ProductAttributeService(cacheManager,
-                _productAttributeRepo.Object,
-                _productAttributeMappingRepo.Object,
-                _productAttributeCombinationRepo.Object,
-                _productAttributeValueRepo.Object,
+                _eventPublisher.Object,
                 _predefinedProductAttributeValueRepo.Object,
-                _eventPublisher.Object);
+                _productAttributeRepo.Object,
+                _productAttributeCombinationRepo.Object,
+                _productAttributeMappingRepo.Object,
+                _productAttributeValueRepo.Object);
 
             _context = new Mock<IDbContext>();
 
@@ -221,26 +225,23 @@ namespace Nop.Services.Tests.Catalog
             _workContext = new Mock<IWorkContext>();
             _workContext.Setup(x => x.WorkingLanguage).Returns(workingLanguage);
             _currencyService = new Mock<ICurrencyService>();
-            _localizationService = new Mock<ILocalizationService>();
-            _localizationService.Setup(x => x.GetResource("GiftCardAttribute.For.Virtual")).Returns("For: {0} <{1}>");
-            _localizationService.Setup(x => x.GetResource("GiftCardAttribute.From.Virtual")).Returns("From: {0} <{1}>");
-            _localizationService.Setup(x => x.GetResource("GiftCardAttribute.For.Physical")).Returns("For: {0}");
-            _localizationService.Setup(x => x.GetResource("GiftCardAttribute.From.Physical")).Returns("From: {0}");
+            _localizationService = TestLocalizationService.Init();
+            
             _taxService = new Mock<ITaxService>();
             _priceFormatter = new Mock<IPriceFormatter>();
             _downloadService = new Mock<IDownloadService>();
             _webHelper = new Mock<IWebHelper>();
             _shoppingCartSettings = new ShoppingCartSettings();
 
-            _productAttributeFormatter = new ProductAttributeFormatter(_workContext.Object,
-                _productAttributeParser,
-                _currencyService.Object,
-                _localizationService.Object,
-                _taxService.Object,
-                _priceFormatter.Object,
+            _productAttributeFormatter = new ProductAttributeFormatter(_currencyService.Object,
                 _downloadService.Object,
-                _webHelper.Object,
+                _localizationService,
                 _priceCalculationService.Object,
+                _priceFormatter.Object,
+                _productAttributeParser,
+                _taxService.Object,
+                _webHelper.Object,
+                _workContext.Object,
                 _shoppingCartSettings);
         }
 

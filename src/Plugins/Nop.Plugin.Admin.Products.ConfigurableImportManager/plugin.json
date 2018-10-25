@@ -1,0 +1,11 @@
+﻿{
+  "Group": "Feed",
+  "FriendlyName": "Configurable Import Manager",
+  "SystemName": "Admin.Products.ConfigurableImportManager",
+  "Version": "1.00",
+  "SupportedVersions": [ "4.10" ],
+  "Author": "Asbjørn Lucassen",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Admin.Products.ConfigurableImportManager.dll",
+  "Description": "Configurable import of products through admin panel. Overrides Nop.Services.ExportImport namespace."
+}

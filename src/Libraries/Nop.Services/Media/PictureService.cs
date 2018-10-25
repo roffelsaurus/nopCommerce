@@ -9,6 +9,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Media;
 using Nop.Core.Infrastructure;
 using Nop.Data;
+using Nop.Services.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Events;
 using Nop.Services.Seo;
@@ -33,55 +34,48 @@ namespace Nop.Services.Media
     {
         #region Fields
 
-        private readonly IRepository<Picture> _pictureRepository;
-        private readonly IRepository<ProductPicture> _productPictureRepository;
-        private readonly ISettingService _settingService;
-        private readonly IWebHelper _webHelper;
+        private readonly IDataProvider _dataProvider;
         private readonly IDbContext _dbContext;
         private readonly IEventPublisher _eventPublisher;
-        private readonly MediaSettings _mediaSettings;
-        private readonly IDataProvider _dataProvider;
         private readonly INopFileProvider _fileProvider;
+        private readonly IProductAttributeParser _productAttributeParser;
+        private readonly IRepository<Picture> _pictureRepository;
         private readonly IRepository<PictureBinary> _pictureBinaryRepository;
+        private readonly IRepository<ProductPicture> _productPictureRepository;
+        private readonly ISettingService _settingService;
+        private readonly IUrlRecordService _urlRecordService;
+        private readonly IWebHelper _webHelper;
+        private readonly MediaSettings _mediaSettings;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="pictureRepository">Picture repository</param>
-        /// <param name="productPictureRepository">Product picture repository</param>
-        /// <param name="settingService">Setting service</param>
-        /// <param name="webHelper">Web helper</param>
-        /// <param name="dbContext">Database context</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        /// <param name="mediaSettings">Media settings</param>
-        /// <param name="dataProvider">Data provider</param>
-        /// <param name="fileProvider">File provider</param>
-        /// <param name="pictureBinaryRepository">PictureBinary repository</param>
-        public PictureService(IRepository<Picture> pictureRepository,
-            IRepository<ProductPicture> productPictureRepository,
-            ISettingService settingService,
-            IWebHelper webHelper,
+        public PictureService(IDataProvider dataProvider,
             IDbContext dbContext,
             IEventPublisher eventPublisher,
-            MediaSettings mediaSettings,
-            IDataProvider dataProvider,
             INopFileProvider fileProvider,
-            IRepository<PictureBinary> pictureBinaryRepository)
+            IProductAttributeParser productAttributeParser,
+            IRepository<Picture> pictureRepository,
+            IRepository<PictureBinary> pictureBinaryRepository,
+            IRepository<ProductPicture> productPictureRepository,
+            ISettingService settingService,
+            IUrlRecordService urlRecordService,
+            IWebHelper webHelper,
+            MediaSettings mediaSettings)
         {
-            this._pictureRepository = pictureRepository;
-            this._productPictureRepository = productPictureRepository;
-            this._settingService = settingService;
-            this._webHelper = webHelper;
+            this._dataProvider = dataProvider;
             this._dbContext = dbContext;
             this._eventPublisher = eventPublisher;
-            this._mediaSettings = mediaSettings;
-            this._dataProvider = dataProvider;
             this._fileProvider = fileProvider;
+            this._productAttributeParser = productAttributeParser;
+            this._pictureRepository = pictureRepository;
             this._pictureBinaryRepository = pictureBinaryRepository;
+            this._productPictureRepository = productPictureRepository;
+            this._settingService = settingService;
+            this._urlRecordService = urlRecordService;
+            this._webHelper = webHelper;
+            this._mediaSettings = mediaSettings;
         }
 
         #endregion
@@ -94,7 +88,7 @@ namespace Nop.Services.Media
         /// <param name="originalSize">The original picture size</param>
         /// <param name="targetSize">The target picture size (longest side)</param>
         /// <param name="resizeType">Resize type</param>
-        /// <param name="ensureSizePositive">A value indicatingh whether we should ensure that size values are positive</param>
+        /// <param name="ensureSizePositive">A value indicating whether we should ensure that size values are positive</param>
         /// <returns></returns>
         protected virtual Size CalculateDimensions(Size originalSize, int targetSize,
             ResizeType resizeType = ResizeType.LongestSide, bool ensureSizePositive = true)
@@ -116,6 +110,7 @@ namespace Nop.Services.Media
                         width = targetSize;
                         height = originalSize.Height * (targetSize / (float)originalSize.Width);
                     }
+
                     break;
                 case ResizeType.Width:
                     width = targetSize;
@@ -129,13 +124,13 @@ namespace Nop.Services.Media
                     throw new Exception("Not supported ResizeType");
             }
 
-            if (ensureSizePositive)
-            {
-                if (width < 1)
-                    width = 1;
-                if (height < 1)
-                    height = 1;
-            }
+            if (!ensureSizePositive) 
+                return new Size((int)Math.Round(width), (int)Math.Round(height));
+
+            if (width < 1)
+                width = 1;
+            if (height < 1)
+                height = 1;
 
             //we invoke Math.Round to ensure that no white background is rendered - https://www.nopcommerce.com/boards/t/40616/image-resizing-bug.aspx
             return new Size((int)Math.Round(width), (int)Math.Round(height));
@@ -167,6 +162,7 @@ namespace Nop.Services.Media
                     lastPart = "ico";
                     break;
             }
+
             return lastPart;
         }
 
@@ -377,6 +373,7 @@ namespace Nop.Services.Media
                         imageEncoder.Encode(image, stream);
                         break;
                 }
+
                 return stream.ToArray();
             }
         }
@@ -433,7 +430,7 @@ namespace Nop.Services.Media
         /// <returns>Result</returns>
         public virtual string GetPictureSeName(string name)
         {
-            return SeoExtensions.GetSeName(name, true, false);
+            return _urlRecordService.GetSeName(name, true, false);
         }
 
         /// <summary>
@@ -458,12 +455,12 @@ namespace Nop.Services.Media
                     defaultImageFileName = _settingService.GetSettingByKey("Media.DefaultImageName", NopMediaDefaults.DefaultImageFileName);
                     break;
             }
+
             var filePath = GetPictureLocalPath(defaultImageFileName);
             if (!_fileProvider.FileExists(filePath))
             {
-                return "";
+                return string.Empty;
             }
-
 
             if (targetSize == 0)
             {
@@ -491,6 +488,7 @@ namespace Nop.Services.Media
                         SaveThumb(thumbFilePath, thumbFileName, imageFormat.DefaultMimeType, pictureBinary);
                     }
                 }
+
                 var url = GetThumbUrl(thumbFileName, storeLocation);
                 return url;
             }
@@ -540,6 +538,7 @@ namespace Nop.Services.Media
                 {
                     url = GetDefaultPictureUrl(targetSize, defaultPictureType, storeLocation);
                 }
+
                 return url;
             }
 
@@ -574,6 +573,7 @@ namespace Nop.Services.Media
                     ? $"{picture.Id:0000000}_{seoFileName}_{targetSize}.{lastPart}"
                     : $"{picture.Id:0000000}_{targetSize}.{lastPart}";
             }
+
             var thumbFilePath = GetThumbLocalPath(thumbFileName);
 
             //the named mutex helps to avoid creating the same files in different threads,
@@ -613,8 +613,8 @@ namespace Nop.Services.Media
 
                     mutex.ReleaseMutex();
                 }
-
             }
+
             url = GetThumbUrl(thumbFileName, storeLocation);
             return url;
         }
@@ -700,7 +700,6 @@ namespace Nop.Services.Media
         {
             if (productId == 0)
                 return new List<Picture>();
-
 
             var query = from p in _pictureRepository.Table
                         join pp in _productPictureRepository.Table on p.Id equals pp.PictureId
@@ -833,6 +832,7 @@ namespace Nop.Services.Media
                     true,
                     false);
             }
+
             return picture;
         }
 
@@ -871,10 +871,47 @@ namespace Nop.Services.Media
             if (supportedLengthOfBinaryHash == 0 || !picturesIds.Any())
                 return new Dictionary<int, string>();
 
-            const string strCommand = "SELECT [Id] as [PictureId], HASHBYTES('sha1', substring([PictureBinary], 0, {0})) as [Hash] FROM [Picture] where [Id] in ({1})";
+            const string strCommand = "SELECT [PictureId], HASHBYTES('sha1', substring([BinaryData], 0, {0})) as [Hash] FROM [PictureBinary] where [PictureId] in ({1})";
             return _dbContext
                 .QueryFromSql<PictureHashItem>(string.Format(strCommand, supportedLengthOfBinaryHash, picturesIds.Select(p => p.ToString()).Aggregate((all, current) => all + ", " + current))).Distinct()
-                .ToDictionary(p => p.PictureId, p => BitConverter.ToString(p.Hash).Replace("-", ""));
+                .ToDictionary(p => p.PictureId, p => BitConverter.ToString(p.Hash).Replace("-", string.Empty));
+        }
+
+        /// <summary>
+        /// Get product picture (for shopping cart and order details pages)
+        /// </summary>
+        /// <param name="product">Product</param>
+        /// <param name="attributesXml">Attributes (in XML format)</param>
+        /// <returns>Picture</returns>
+        public virtual Picture GetProductPicture(Product product, string attributesXml)
+        {
+            if (product == null)
+                throw new ArgumentNullException(nameof(product));
+
+            //first, try to get product attribute combination picture
+            var combination = _productAttributeParser.FindProductAttributeCombination(product, attributesXml);
+            var combinationPicture = GetPictureById(combination?.PictureId ?? 0);
+            if (combinationPicture != null)
+                return combinationPicture;
+
+            //then, let's see whether we have attribute values with pictures
+            var attributePicture = _productAttributeParser.ParseProductAttributeValues(attributesXml)
+                .Select(attributeValue => GetPictureById(attributeValue?.PictureId ?? 0))
+                .FirstOrDefault(picture => picture != null);
+            if (attributePicture != null)
+                return attributePicture;
+
+            //now let's load the default product picture
+            var productPicture = GetPicturesByProductId(product.Id, 1).FirstOrDefault();
+            if (productPicture != null)
+                return productPicture;
+
+            //finally, let's check whether this product has some parent "grouped" product
+            if (product.VisibleIndividually || product.ParentGroupedProductId <= 0) 
+                return null;
+
+            var parentGroupedProductPicture = GetPicturesByProductId(product.ParentGroupedProductId, 1).FirstOrDefault();
+            return parentGroupedProductPicture;
         }
 
         #endregion
@@ -886,14 +923,11 @@ namespace Nop.Services.Media
         /// </summary>
         public virtual bool StoreInDb
         {
-            get
-            {
-                return _settingService.GetSettingByKey("Media.Images.StoreInDB", true);
-            }
+            get => _settingService.GetSettingByKey("Media.Images.StoreInDB", true);
             set
             {
                 //check whether it's a new value
-                if (this.StoreInDb == value)
+                if (StoreInDb == value)
                     return;
 
                 //save the new setting value
@@ -938,6 +972,7 @@ namespace Nop.Services.Media
                             //raise event?
                             //_eventPublisher.EntityUpdated(picture);
                         }
+
                         //save all at once
                         _pictureRepository.Update(pictures);
                         //detach them in order to release memory
@@ -947,8 +982,9 @@ namespace Nop.Services.Media
                         }
                     }
                 }
-                finally
+                catch
                 {
+                    // ignored
                 }
             }
         }

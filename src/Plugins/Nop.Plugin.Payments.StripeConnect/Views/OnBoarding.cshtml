@@ -1,0 +1,47 @@
+﻿@using Nop.Plugin.Payments.StripeConnect.Models;
+@using Nop.Plugin.Payments.StripeConnect;
+@using System.Text.Encodings.Web
+@using Nop.Core
+
+@model OnBoardingModel
+@inject Nop.Core.IWebHelper webHelper
+@{
+    Layout = "_ColumnsTwo";
+
+    //title
+    Html.AddTitleParts(T("PageTitle.Account").Text);
+    //page class
+    Html.AppendPageCssClassParts("html-account-page");
+    Html.AppendPageCssClassParts("html-customer-info-page");
+}
+
+@section left
+    {
+    @await Component.InvokeAsync("CustomerNavigation")
+}
+
+<div class="page account-page customer-info-page">
+        <div class="page-title">
+            <h1>@T("Account.MyAccount") - @T("Plugin.Payments.StripeConnect.AccountNavStripeIntegration")</h1>
+        </div>
+        <div class="page-body">
+
+            @if (!Model.AlreadyOnboard)
+            {
+
+                @if (Model.OnBoardingUrl != null)
+                {
+                    <div>@T("Plugin.Payments.StripeConnect.OnBoarding.Consent")</div>
+                    <br />
+                    <a href="@Model.OnBoardingUrl">@T("Plugin.Payments.StripeConnect.OnBoarding.LinkText")</a>
+
+                }
+                // redirect error goes here?
+            }
+            else
+            {
+                <div>@T("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnBoarded")</div>
+            }
+
+        </div>
+</div>
