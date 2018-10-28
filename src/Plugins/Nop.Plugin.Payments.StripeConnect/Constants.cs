@@ -8,4 +8,9 @@ namespace Nop.Plugin.Payments.StripeConnect
     {
         public const string AccountNavStripeIntegration = "WidgetsAccountNavStripeIntegration";
     }
+
+    public static class ViewComponents
+    {
+        public const string PaymentInfo = "PaymentStripeConnect";
+    }
 }

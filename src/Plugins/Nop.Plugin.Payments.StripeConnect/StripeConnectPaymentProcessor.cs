@@ -117,17 +117,17 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         #region Payment Methods
 
-        public bool SupportCapture => true;
+        public bool SupportCapture => false;
 
         public bool SupportPartiallyRefund => false;
 
         public bool SupportRefund => true;
 
-        public bool SupportVoid => true;
+        public bool SupportVoid => false;
 
         public RecurringPaymentType RecurringPaymentType => RecurringPaymentType.NotSupported;
 
-        public PaymentMethodType PaymentMethodType => PaymentMethodType.Redirection;
+        public PaymentMethodType PaymentMethodType => PaymentMethodType.Standard;
 
         public bool SkipPaymentInfo => false;
 
@@ -155,17 +155,17 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public ProcessPaymentRequest GetPaymentInfo(IFormCollection form)
         {
-            throw new NotImplementedException();
+            return new ProcessPaymentRequest();
         }
 
         public string GetPublicViewComponentName()
         {
-            throw new NotImplementedException();
+            return ViewComponents.PaymentInfo;
         }
         
         public bool HidePaymentMethod(IList<ShoppingCartItem> cart)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         public void PostProcessPayment(PostProcessPaymentRequest postProcessPaymentRequest)
@@ -190,7 +190,7 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public IList<string> ValidatePaymentForm(IFormCollection form)
         {
-            throw new NotImplementedException();
+            return new List<string>();
         }
 
         public VoidPaymentResult Void(VoidPaymentRequest voidPaymentRequest)
