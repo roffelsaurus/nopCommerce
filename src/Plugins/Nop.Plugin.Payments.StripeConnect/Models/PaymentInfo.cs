@@ -6,6 +6,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Models
 {
     public class PaymentInfo
     {
-        public string PublishableKey { get; set; }
+        public string Token { get; set; }
     }
 }

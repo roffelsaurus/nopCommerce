@@ -1,47 +1,38 @@
 ﻿@using Nop.Plugin.Payments.StripeConnect.Models;
+@using Nop.Plugin.Payments.StripeConnect;
+
 @model Nop.Plugin.Payments.StripeConnect.Models.PaymentInfo;
 
 @{
     Layout = "";
 }
+@inject StripeConnectPaymentSettings _settings;
+
+
 <script src="https://js.stripe.com/v3/"></script>
 
-<form action="/charge" method="post" id="payment-form">
-    <div class="form-row">
-        <label for="card-element">
-            Credit or debit card
-        </label>
-        <div id="card-element">
-            <!-- A Stripe Element will be inserted here. -->
-        </div>
-
-        <!-- Used to display form errors. -->
-        <div id="card-errors" role="alert"></div>
+@*<form action="/charge" method="post" id="payment-form">*@
+<div class="form-row">
+    <label for="card-element">
+        Credit or debit card
+    </label>
+    <div id="card-element">
+        <!-- A Stripe Element will be inserted here. -->
     </div>
 
-    <button>Submit Payment</button>
-</form>
+    <!-- Used to display form errors. -->
+    <div id="card-errors" role="alert"></div>
+</div>
+<input type="hidden" asp-for="Token">
+@*<button>Submit Payment</button>
+    </form>*@
 <script>
     stripeTokenHandler = function (token) {
-        // fange token med hacky mig jquery:
-        
-        //            $('#@Html.IdFor(model => model.Token)').val(response.token);
-         //       } else {
-         //           $('#@Html.IdFor(model => model.Errors)').val(response.message);
 
 
-        // jquery onclick event listener for at GetPaymentInfo(IFormCollection form) skal få data
+    };
 
-       //         $('input.payment-info-next-step-button').on('click', function (data) { 
-        //        PaymentInfo.save();
-       //     }
-      //  });
-
-    }
-
-
-
-    var stripe = Stripe('pk_test_CnzMQq6qpb84MAMth0zPyd6V');
+    var stripe = Stripe('@_settings.PublishableKey');
 
     // Create an instance of Elements.
     var elements = stripe.elements();
@@ -81,11 +72,7 @@
         }
     });
 
-    // Handle form submission.
-    var form = document.getElementById('payment-form');
-    form.addEventListener('submit', function (event) {
-        event.preventDefault();
-
+    $('input.payment-info-next-step-button').on('click', function (data) {
         stripe.createToken(card).then(function (result) {
             if (result.error) {
                 // Inform the user if there was an error.
@@ -94,7 +81,19 @@
             } else {
                 // Send the token to your server.
                 stripeTokenHandler(result.token);
+                        $('#@Html.IdFor(model => model.Token)').val(response.token);
+                PaymentInfo.save();
             }
         });
-    });
+
+
+        });
+
+    // Handle form submission.
+    //var form = document.getElementById('payment-form');
+    //form.addEventListener('submit', function (event) {
+    //    event.preventDefault();
+
+
+    //});
 </script>

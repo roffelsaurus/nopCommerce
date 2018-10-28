@@ -13,4 +13,10 @@ namespace Nop.Plugin.Payments.StripeConnect
     {
         public const string PaymentInfo = "PaymentStripeConnect";
     }
+
+    public static class PaymentInfoFormKeys
+    {
+        public const string Token = "Token";
+        public const string SellerCustomerId = "SellerCustomerId";
+    }
 }

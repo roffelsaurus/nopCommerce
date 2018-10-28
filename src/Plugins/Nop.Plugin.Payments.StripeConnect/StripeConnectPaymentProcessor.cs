@@ -10,7 +10,9 @@ using Nop.Web.Framework.Infrastructure;
 using System;
 using System.Collections.Generic;
 using Nop.Plugin.Payments.StripeConnect.Data;
-
+using Nop.Plugin.Payments.StripeConnect.Services;
+using System.Linq;
+using Nop.Services.Orders;
 
 namespace Nop.Plugin.Payments.StripeConnect
 {
@@ -20,16 +22,25 @@ namespace Nop.Plugin.Payments.StripeConnect
         private readonly IWebHelper _webhelper;
         private readonly ISettingService _settingService;
         private readonly StripeConnectObjectContext _stripeConnectObjectContext;
+        private readonly IChargeService _chargeService;
+        private readonly IWorkContext _workContext;
+        private readonly IStoreContext _storeContext;
 
         public StripeConnectPaymentProcessor(ILocalizationService localizationService,
             IWebHelper webHelper,
             ISettingService settingService,
-            StripeConnectObjectContext stripeConnectObjectContext)
+            StripeConnectObjectContext stripeConnectObjectContext,
+            IChargeService chargeService,
+            IWorkContext workContext,
+            IStoreContext storeContext)
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
             _settingService = settingService;
             _stripeConnectObjectContext = stripeConnectObjectContext;
+            _chargeService = chargeService;
+            _workContext = workContext;
+            _storeContext = storeContext;
         }
 
         /// <summary>
@@ -152,10 +163,30 @@ namespace Nop.Plugin.Payments.StripeConnect
         {
             return 0m;
         }
-
+        
         public ProcessPaymentRequest GetPaymentInfo(IFormCollection form)
         {
-            return new ProcessPaymentRequest();
+            var cart = _workContext.CurrentCustomer.ShoppingCartItems
+            .Where(sci => sci.ShoppingCartType == ShoppingCartType.ShoppingCart)
+            .LimitPerStore(_storeContext.CurrentStore.Id)
+            .ToList();
+
+            var vendorids = cart
+                .Select(i => i.Product.VendorId)
+            .Distinct();
+
+            if (vendorids.Count() != 1)
+                return null;
+
+            var processPaymentRequest = new ProcessPaymentRequest();
+            var tokenfound = form.TryGetValue(PaymentInfoFormKeys.Token, out var token);
+
+                processPaymentRequest.CustomValues = new Dictionary<string, object>()
+                {
+                    [PaymentInfoFormKeys.Token] = token.ToString(),
+                    [PaymentInfoFormKeys.SellerCustomerId] = vendorids.First()
+                };
+            return processPaymentRequest;
         }
 
         public string GetPublicViewComponentName()
@@ -175,7 +206,10 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public ProcessPaymentResult ProcessPayment(ProcessPaymentRequest processPaymentRequest)
         {
-            throw new NotImplementedException();
+            var token = (string)processPaymentRequest.CustomValues[PaymentInfoFormKeys.Token];
+            var sellerCustomerId = (int)processPaymentRequest.CustomValues[PaymentInfoFormKeys.SellerCustomerId];
+            return _chargeService.Charge(token,
+                processPaymentRequest.OrderTotal, sellerCustomerId);
         }
 
         public ProcessPaymentResult ProcessRecurringPayment(ProcessPaymentRequest processPaymentRequest)
