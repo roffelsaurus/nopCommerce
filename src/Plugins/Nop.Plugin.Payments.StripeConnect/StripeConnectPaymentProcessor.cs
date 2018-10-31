@@ -13,6 +13,7 @@ using Nop.Plugin.Payments.StripeConnect.Data;
 using Nop.Plugin.Payments.StripeConnect.Services;
 using System.Linq;
 using Nop.Services.Orders;
+using Nop.Services.Catalog;
 
 namespace Nop.Plugin.Payments.StripeConnect
 {
@@ -25,6 +26,7 @@ namespace Nop.Plugin.Payments.StripeConnect
         private readonly IChargeService _chargeService;
         private readonly IWorkContext _workContext;
         private readonly IStoreContext _storeContext;
+        private readonly IPriceCalculationService _priceCalculationService;
 
         public StripeConnectPaymentProcessor(ILocalizationService localizationService,
             IWebHelper webHelper,
@@ -32,7 +34,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             StripeConnectObjectContext stripeConnectObjectContext,
             IChargeService chargeService,
             IWorkContext workContext,
-            IStoreContext storeContext)
+            IStoreContext storeContext,
+            IPriceCalculationService priceCalculationService)
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
@@ -41,6 +44,7 @@ namespace Nop.Plugin.Payments.StripeConnect
             _chargeService = chargeService;
             _workContext = workContext;
             _storeContext = storeContext;
+            _priceCalculationService = priceCalculationService;
         }
 
         /// <summary>
@@ -178,13 +182,19 @@ namespace Nop.Plugin.Payments.StripeConnect
             if (vendorids.Count() != 1)
                 return null;
 
+            decimal subTotal = decimal.Zero;
+            foreach (var shoppingCartItem in cart)
+            {
+                subTotal += _priceCalculationService.GetSubTotal(shoppingCartItem, true);
+            }
             var processPaymentRequest = new ProcessPaymentRequest();
             var tokenfound = form.TryGetValue(PaymentInfoFormKeys.Token, out var token);
 
                 processPaymentRequest.CustomValues = new Dictionary<string, object>()
                 {
                     [PaymentInfoFormKeys.Token] = token.ToString(),
-                    [PaymentInfoFormKeys.SellerCustomerId] = vendorids.First()
+                    [PaymentInfoFormKeys.SellerCustomerId] = vendorids.First(),
+                    [PaymentInfoFormKeys.OrderSubTotal] = subTotal
                 };
             return processPaymentRequest;
         }
@@ -207,9 +217,9 @@ namespace Nop.Plugin.Payments.StripeConnect
         public ProcessPaymentResult ProcessPayment(ProcessPaymentRequest processPaymentRequest)
         {
             var token = (string)processPaymentRequest.CustomValues[PaymentInfoFormKeys.Token];
-            var sellerCustomerId = (int)processPaymentRequest.CustomValues[PaymentInfoFormKeys.SellerCustomerId];
-            return _chargeService.Charge(token,
-                processPaymentRequest.OrderTotal, sellerCustomerId);
+            var sellerCustomerId = Convert.ToInt32(processPaymentRequest.CustomValues[PaymentInfoFormKeys.SellerCustomerId]);
+            var subTotal = Convert.ToDecimal(processPaymentRequest.CustomValues[PaymentInfoFormKeys.OrderSubTotal]);
+            return _chargeService.Charge(token, processPaymentRequest.OrderTotal ,subTotal, sellerCustomerId);
         }
 
         public ProcessPaymentResult ProcessRecurringPayment(ProcessPaymentRequest processPaymentRequest)

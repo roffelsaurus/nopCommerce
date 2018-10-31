@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Plugin.Payments.StripeConnect.Models;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Plugin.Payments.StripeConnect.Components
@@ -8,7 +9,9 @@ namespace Nop.Plugin.Payments.StripeConnect.Components
     {
         public IViewComponentResult Invoke()
         {
-            return View("~/Plugins/Payments.StripeConnect/Views/PaymentInfo.cshtml");
+            var model = new PaymentInfo();
+            
+            return View("~/Plugins/Payments.StripeConnect/Views/PaymentInfo.cshtml", model);
         }
     }
 }

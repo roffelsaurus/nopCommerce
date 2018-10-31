@@ -11,6 +11,7 @@
     <PackageProjectUrl>http://www.nopcommerce.com/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nopSolutions/nopCommerce</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <UserSecretsId>8d23ad2a-5442-4f99-a852-82e1cd6eac28</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -37,15 +37,19 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         }
 
 
-        public ProcessPaymentResult Charge(string token,decimal amount, int sellerCustomerId)
+        public ProcessPaymentResult Charge(string token, decimal orderTotal, decimal orderSubTotal, int sellerCustomerId)
         {
             var stripecustomer = _customerEntityService.GetOrCreate(sellerCustomerId);
-            var stripeAmount = NopAmountToStripeAmount(amount);
-            var appFee = (int)(stripeAmount * 0.2);
-            var chargeStripeAmount = stripeAmount - appFee;
+            var StripeBasedTotal = Convert.ToInt32(NopAmountToStripeAmount(orderTotal));
+            var stripebasedSubTotal = NopAmountToStripeAmount(orderSubTotal);
+            
+
+            // fee is 20% of total without shipping
+            var appFee = Convert.ToInt32(Math.Floor(stripebasedSubTotal * 0.2m)); // todo configurable appfee percent
+            var chargeAmount = StripeBasedTotal - appFee;
             var charge = _stripeChargeService.Create(new StripeChargeCreateOptions()
             {
-                Amount = chargeStripeAmount,
+                Amount = chargeAmount,
                 SourceTokenOrExistingSourceId = token,
                 ApplicationFee = appFee,
                 Currency = "USD" // TODO currency
@@ -61,9 +65,9 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             };
         }
 
-        private int? NopAmountToStripeAmount(decimal amount)
+        private decimal NopAmountToStripeAmount(decimal amount)
         {
-            return (int)(amount * 100); // TODO fix currency
+            return Math.Floor(amount * 100m); // TODO fix currency to use subcurrency, not 100m
         }
     }
 }

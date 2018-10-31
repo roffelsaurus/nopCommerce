@@ -5,13 +5,11 @@
 
 @{
     Layout = "";
+    Html.AddScriptParts(ResourceLocation.Footer, Javascripts.StripeV3, excludeFromBundle: true);
+
 }
 @inject StripeConnectPaymentSettings _settings;
 
-
-<script src="https://js.stripe.com/v3/"></script>
-
-@*<form action="/charge" method="post" id="payment-form">*@
 <div class="form-row">
     <label for="card-element">
         Credit or debit card
@@ -24,14 +22,7 @@
     <div id="card-errors" role="alert"></div>
 </div>
 <input type="hidden" asp-for="Token">
-@*<button>Submit Payment</button>
-    </form>*@
 <script>
-    stripeTokenHandler = function (token) {
-
-
-    };
-
     var stripe = Stripe('@_settings.PublishableKey');
 
     // Create an instance of Elements.
@@ -80,20 +71,11 @@
                 errorElement.textContent = result.error.message;
             } else {
                 // Send the token to your server.
-                stripeTokenHandler(result.token);
-                        $('#@Html.IdFor(model => model.Token)').val(response.token);
+                $('#@Html.IdFor(model => model.Token)').val(result.token);
                 PaymentInfo.save();
             }
         });
 
 
-        });
-
-    // Handle form submission.
-    //var form = document.getElementById('payment-form');
-    //form.addEventListener('submit', function (event) {
-    //    event.preventDefault();
-
-
-    //});
+    });
 </script>

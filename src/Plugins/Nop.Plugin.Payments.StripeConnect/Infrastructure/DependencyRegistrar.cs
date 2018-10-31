@@ -26,6 +26,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
         {
             builder.RegisterInstance(new HttpClient()).SingleInstance();
             builder.RegisterType<OnBoardingService>().As<IOnBoardingService>().SingleInstance();
+            builder.RegisterType<ChargeService>().As<IChargeService>();
 
             //data context
             builder.RegisterPluginDataContext<Data.StripeConnectObjectContext>("nop_object_context_stripeconnect");

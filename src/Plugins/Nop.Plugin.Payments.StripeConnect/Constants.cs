@@ -18,5 +18,16 @@ namespace Nop.Plugin.Payments.StripeConnect
     {
         public const string Token = "Token";
         public const string SellerCustomerId = "SellerCustomerId";
+        public const string OrderSubTotal = "OrderSubTotal";
+    }
+
+    public static class StripeConnectConstants
+    {
+        public const string SystemName = "Payments.StripeConnect";
+    }
+
+    public static class Javascripts
+    {
+        public const string StripeV3 = "https://js.stripe.com/v3/";
     }
 }
