@@ -14,6 +14,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
         public const string ONBOARDING_ROUTE = "StripeConnect/OnBoarding";
         public const string ONBOARDING_REDIRECT_NAME = "StripeConnectOnBoardingRedirect";
         public const string ONBOARDING_REDIRECT_ROUTE = "StripeConnect/OnBoarding/Redirect";
+        public const string CREATE_TOKEN_NAME = "StripeConnectCreateToken";
+        public const string CREATE_TOKEN_ROUTE = "StripeConnect/StripeCheckout/CreateToken";
         /// <summary>
         /// Register routes
         /// </summary>
@@ -28,6 +30,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
 
             routeBuilder.MapRoute(ONBOARDING_REDIRECT_NAME, ONBOARDING_REDIRECT_ROUTE,
                 new { controller = "OnBoarding", action = "Redirect" });
+            //routeBuilder.MapRoute(CREATE_TOKEN_NAME, CREATE_TOKEN_ROUTE,
+            //    new { controller = "StripeCheckout", action = "CreateToken" });
         }
         
         

@@ -14,6 +14,9 @@ using Nop.Plugin.Payments.StripeConnect.Services;
 using System.Linq;
 using Nop.Services.Orders;
 using Nop.Services.Catalog;
+using Nop.Services.Logging;
+using Nop.Services.Vendors;
+using Nop.Services.Customers;
 
 namespace Nop.Plugin.Payments.StripeConnect
 {
@@ -27,6 +30,9 @@ namespace Nop.Plugin.Payments.StripeConnect
         private readonly IWorkContext _workContext;
         private readonly IStoreContext _storeContext;
         private readonly IPriceCalculationService _priceCalculationService;
+        private readonly ILogger _logger;
+        private readonly IVendorService _vendorService;
+        private readonly ICustomerService _customerService;
 
         public StripeConnectPaymentProcessor(ILocalizationService localizationService,
             IWebHelper webHelper,
@@ -35,7 +41,10 @@ namespace Nop.Plugin.Payments.StripeConnect
             IChargeService chargeService,
             IWorkContext workContext,
             IStoreContext storeContext,
-            IPriceCalculationService priceCalculationService)
+            IPriceCalculationService priceCalculationService,
+            ILogger logger,
+            IVendorService vendorService,
+            ICustomerService customerService )
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
@@ -45,6 +54,9 @@ namespace Nop.Plugin.Payments.StripeConnect
             _workContext = workContext;
             _storeContext = storeContext;
             _priceCalculationService = priceCalculationService;
+            _logger = logger;
+            _vendorService = vendorService;
+            _customerService = customerService;
         }
 
         /// <summary>
@@ -182,18 +194,32 @@ namespace Nop.Plugin.Payments.StripeConnect
             if (vendorids.Count() != 1)
                 return null;
 
+           // var vendor = _vendorService.GetVendorById(vendorids.First());
+
+            var customer = _customerService.GetAllCustomers(vendorId: vendorids.First());
+
+            if (customer.Count() != 1)
+                return null;
+
             decimal subTotal = decimal.Zero;
             foreach (var shoppingCartItem in cart)
             {
                 subTotal += _priceCalculationService.GetSubTotal(shoppingCartItem, true);
             }
             var processPaymentRequest = new ProcessPaymentRequest();
+            //processPaymentRequest.CreditCardCvv2 = form[PaymentInfoFormKeys.CardCode];
+            //processPaymentRequest.CreditCardExpireMonth = Int32.Parse(form[PaymentInfoFormKeys.ExpireMonth]);
+            //processPaymentRequest.CreditCardExpireYear = Int32.Parse(form[PaymentInfoFormKeys.ExpireYear]);
+            //processPaymentRequest.CreditCardName = form[PaymentInfoFormKeys.CardName];
+            //processPaymentRequest.CreditCardNumber = form[PaymentInfoFormKeys.CardNumber];
+
+
             var tokenfound = form.TryGetValue(PaymentInfoFormKeys.Token, out var token);
 
-                processPaymentRequest.CustomValues = new Dictionary<string, object>()
+            processPaymentRequest.CustomValues = new Dictionary<string, object>()
                 {
                     [PaymentInfoFormKeys.Token] = token.ToString(),
-                    [PaymentInfoFormKeys.SellerCustomerId] = vendorids.First(),
+                    [PaymentInfoFormKeys.SellerCustomerId] = customer.First().Id,
                     [PaymentInfoFormKeys.OrderSubTotal] = subTotal
                 };
             return processPaymentRequest;
@@ -216,7 +242,12 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public ProcessPaymentResult ProcessPayment(ProcessPaymentRequest processPaymentRequest)
         {
+
             var token = (string)processPaymentRequest.CustomValues[PaymentInfoFormKeys.Token];
+
+            // todo error handling
+            _logger.Information("token: " + token);
+
             var sellerCustomerId = Convert.ToInt32(processPaymentRequest.CustomValues[PaymentInfoFormKeys.SellerCustomerId]);
             var subTotal = Convert.ToDecimal(processPaymentRequest.CustomValues[PaymentInfoFormKeys.OrderSubTotal]);
             return _chargeService.Charge(token, processPaymentRequest.OrderTotal ,subTotal, sellerCustomerId);
@@ -234,6 +265,7 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public IList<string> ValidatePaymentForm(IFormCollection form)
         {
+            // toodo
             return new List<string>();
         }
 

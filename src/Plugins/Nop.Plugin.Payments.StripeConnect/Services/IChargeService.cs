@@ -1,4 +1,5 @@
 ﻿using Nop.Services.Payments;
+using Stripe;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {

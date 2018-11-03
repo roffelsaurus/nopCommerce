@@ -1,4 +1,5 @@
-﻿using Nop.Core;
+﻿using Newtonsoft.Json;
+using Nop.Core;
 using Nop.Services.Logging;
 using Nop.Services.Payments;
 using Stripe;
@@ -18,6 +19,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         private readonly HttpClient _httpClient;
         private readonly ICustomerEntityService _customerEntityService;
         private readonly StripeChargeService _stripeChargeService;
+        private readonly StripeTokenService _stripetokenservice;
 
         public ChargeService(IWorkContext workContext,
             ILogger logger,
@@ -34,6 +36,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             _httpClient = httpClient;
             _customerEntityService = customerEntityService;
             _stripeChargeService = new StripeChargeService(_stripeConnectPaymentSettings.SecretKey);
+            _stripetokenservice = new StripeTokenService(_stripeConnectPaymentSettings.SecretKey);
         }
 
 
@@ -47,13 +50,18 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             // fee is 20% of total without shipping
             var appFee = Convert.ToInt32(Math.Floor(stripebasedSubTotal * 0.2m)); // todo configurable appfee percent
             var chargeAmount = StripeBasedTotal - appFee;
-            var charge = _stripeChargeService.Create(new StripeChargeCreateOptions()
+
+            var chargeOptions = new StripeChargeCreateOptions()
             {
                 Amount = chargeAmount,
                 SourceTokenOrExistingSourceId = token,
                 ApplicationFee = appFee,
                 Currency = "USD" // TODO currency
-            }, new StripeRequestOptions()
+            };
+            _logger.Information("Stripe charge with Token: " + token + ", Amount: " + chargeAmount + ", AppFee: " + appFee);
+
+
+            var charge = _stripeChargeService.Create(chargeOptions, new StripeRequestOptions()
             {
                 // IdempotencyKey = GetIdempotencyKey(orderId) TODO include this?
                 StripeConnectAccountId = stripecustomer.StripeUserId
@@ -69,5 +77,6 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         {
             return Math.Floor(amount * 100m); // TODO fix currency to use subcurrency, not 100m
         }
+
     }
 }
