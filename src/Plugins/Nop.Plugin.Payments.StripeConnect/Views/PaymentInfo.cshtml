@@ -6,8 +6,6 @@
 
 @{
     Layout = "";
-     Html.AddScriptParts(ResourceLocation.Footer, Javascripts.StripeV3, excludeFromBundle: true);
-
 }
 @inject StripeConnectPaymentSettings _settings;
 
@@ -35,21 +33,19 @@
             iconStyle: 'solid',
             style: {
                 base: {
-                    iconColor: '#c4f0ff',
-                    color: '#fff',
-                    fontSize: '16px',
-                    fontSmoothing: 'antialiased',
-
+                    iconColor: '#000000',
+                    color: '#333',
+                    fontWeight: 600,
                     ':-webkit-autofill': {
-                        color: '#fce883',
+                        color: '#e1c436',
                     },
                     '::placeholder': {
-                        color: '#87BBFD',
+                        color: '#a3a3a3',
                     },
                 },
                 invalid: {
-                    iconColor: '#FFC7EE',
-                    color: '#FFC7EE',
+                    iconColor: '#ff0000',
+                    color: '#333',
                 },
             },
         });
@@ -62,8 +58,10 @@
             var displayError = document.getElementById('card-errors');
             if (event.error) {
                 displayError.textContent = event.error.message;
+                displayError.classList.add('stripe-card-errors-show');
             } else {
                 displayError.textContent = '';
+                displayError.classList.remove('stripe-card-errors-show');
             }
         });
 
@@ -111,15 +109,19 @@
 
 </script>
 
-<div class="form-row">
-    <label for="card-element" style="font-weight:bold;color:#fff;font-size:16px;">
-        @T("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard")
-    </label>
-    <div id="card-element">
-        <!-- A Stripe Element will be inserted here. -->
+<div>
+    <div class="stripe-card-label">
+        <label for="card-element">
+            @T("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard")
+        </label>
+    </div>
+    <div class="stripe-card-element-wrapper">
+        <div class="stripe-card-element" id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+        </div>
     </div>
 
-    <!-- Used to display form errors. -->
-    <div id="card-errors" role="alert"></div>
+    <div id="card-errors" class="stripe-card-errors" role="alert">
+    </div>
 </div>
 <input type="hidden" asp-for="Token">

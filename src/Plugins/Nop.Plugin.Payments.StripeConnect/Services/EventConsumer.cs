@@ -39,7 +39,11 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
 
             //add js sсript to one page checkout
             if (eventMessage.GetRouteNames().Any(r => r.Equals("CheckoutOnePage")))
+            {
                 eventMessage.Helper.AddScriptParts(ResourceLocation.Footer, Javascripts.StripeV3, excludeFromBundle: true);
+                eventMessage.Helper.AddCssFileParts("~/Plugins/Payments.StripeConnect/Content/PaymentInfo/paymentinfo.css");
+
+            }
         }
     }
 }
