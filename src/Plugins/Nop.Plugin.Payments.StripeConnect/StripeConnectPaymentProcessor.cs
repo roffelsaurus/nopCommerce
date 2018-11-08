@@ -115,6 +115,11 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.LinkText", "Click here to navigate to Stripe Onboarding");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded", "You are already onboarded!");
 
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard", "Pay with card");
+
+
+
+            
 
             base.Install();
         }
@@ -135,6 +140,7 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Fail");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.LinkText");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded");
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard");
 
 
 
@@ -194,8 +200,6 @@ namespace Nop.Plugin.Payments.StripeConnect
             if (vendorids.Count() != 1)
                 return null;
 
-           // var vendor = _vendorService.GetVendorById(vendorids.First());
-
             var customer = _customerService.GetAllCustomers(vendorId: vendorids.First());
 
             if (customer.Count() != 1)
@@ -207,12 +211,6 @@ namespace Nop.Plugin.Payments.StripeConnect
                 subTotal += _priceCalculationService.GetSubTotal(shoppingCartItem, true);
             }
             var processPaymentRequest = new ProcessPaymentRequest();
-            //processPaymentRequest.CreditCardCvv2 = form[PaymentInfoFormKeys.CardCode];
-            //processPaymentRequest.CreditCardExpireMonth = Int32.Parse(form[PaymentInfoFormKeys.ExpireMonth]);
-            //processPaymentRequest.CreditCardExpireYear = Int32.Parse(form[PaymentInfoFormKeys.ExpireYear]);
-            //processPaymentRequest.CreditCardName = form[PaymentInfoFormKeys.CardName];
-            //processPaymentRequest.CreditCardNumber = form[PaymentInfoFormKeys.CardNumber];
-
 
             var tokenfound = form.TryGetValue(PaymentInfoFormKeys.Token, out var token);
 
