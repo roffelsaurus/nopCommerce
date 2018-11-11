@@ -126,7 +126,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success",
                 "Shipping updated.");
 
-
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.SingleVendorWarning",
+                "Only products from one vendor can be added to cart at a time.");
 
             base.Install();
         }
@@ -147,7 +148,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustShipping");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success");
-
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.SingleVendorWarning");
             base.Uninstall();
         }
 

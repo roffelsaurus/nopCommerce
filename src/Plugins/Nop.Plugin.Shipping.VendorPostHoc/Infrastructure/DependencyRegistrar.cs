@@ -7,6 +7,7 @@ using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Data;
 using Nop.Plugin.Shipping.VendorPostHoc.Domain;
 using Nop.Plugin.Shipping.VendorPostHoc.Services;
+using Nop.Services.Orders;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Framework.Infrastructure.Extensions;
 
@@ -45,6 +46,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Infrastructure
                 .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_vendorposthoc"))
                 .InstancePerLifetimeScope();
             builder.RegisterType<VendorConfigurationService>().As<IVendorConfigurationService>().InstancePerLifetimeScope();
+            builder.RegisterType<RetradeShoppingCartService>().As<IShoppingCartService>().InstancePerLifetimeScope();
         }
 
         /// <summary>
