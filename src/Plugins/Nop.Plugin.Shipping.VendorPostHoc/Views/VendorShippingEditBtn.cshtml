@@ -1,9 +1,0 @@
-﻿@model OrderModel
-
-@using Nop.Core.Domain.Tax;
-@using Nop.Web.Areas.Admin.Models.Orders;
-
-<a asp-area="Admin" asp-controller="AdjustOrderShipping" asp-action="AdjustOrderShipping" asp-route-id="@Model.Id" class="btn bg-yellow">
-    <i class="fa fa-edit"></i>
-    @T("Plugin.Shipping.VendorPostHoc.AdjustShipping")
-</a>

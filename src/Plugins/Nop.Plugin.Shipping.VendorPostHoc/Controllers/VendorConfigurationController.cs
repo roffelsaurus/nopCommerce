@@ -29,7 +29,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IPermissionService _permissionService;
         private readonly ISettingService _settingService;
-        private readonly VendorPostHocSettings _vendorPostHocSettings;
         private readonly IWorkContext _workcontext;
         private readonly IVendorConfigurationService _vendorconfigurationservice;
 
@@ -37,14 +36,12 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Controllers
             ILocalizationService localizationService,
             IPermissionService permissionService,
             ISettingService settingService,
-            VendorPostHocSettings vendorPostHocSettings,
             IWorkContext workContext,
             IVendorConfigurationService vendorConfigurationService)
         {
             _localizationService = localizationService;
             _permissionService = permissionService;
             _settingService = settingService;
-            _vendorPostHocSettings = vendorPostHocSettings;
             _workcontext = workContext;
             _vendorconfigurationservice = vendorConfigurationService;
         }

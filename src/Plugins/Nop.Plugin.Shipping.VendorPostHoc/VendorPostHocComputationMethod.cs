@@ -48,7 +48,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
 
         public override string GetConfigurationPageUrl()
         {
-            return $"{_webHelper.GetStoreLocation()}Admin/VendorPostHoc/Configure";
+            return null;  // $"{_webHelper.GetStoreLocation()}Admin/VendorPostHoc/Configure";
         }
 
         public GetShippingOptionResponse GetShippingOptions(GetShippingOptionRequest getShippingOptionRequest)
@@ -80,8 +80,7 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         {
             return new List<string>()
             {
-                AdminWidgetZones.OrderDetailsInfoTop,
-                AdminWidgetZones.OrderDetailsButtons
+                AdminWidgetZones.OrderDetailsInfoTop
             };
         }
 
@@ -90,7 +89,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             switch (widgetZone)
             {
                 case string s when s.Equals(AdminWidgetZones.OrderDetailsInfoTop): return PluginWidgets.VendorOrderInfo;
-                case string s when s.Equals(AdminWidgetZones.OrderDetailsButtons): return PluginWidgets.VendorShippingEditBtn;
                 default:
                     return null;
             }
@@ -100,11 +98,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         public override void Install()
         {
             _vendorPostHocObjectContext.Install();
-            var settings = new VendorPostHocSettings()
-            {
-                AllowedTotalShippingCostChange = 1.15m // default paypal allowed change
-            };
-            _settingService.SaveSetting(settings);
 
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name",
                 "Estimated shipping");
@@ -135,7 +128,6 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
         public override void Uninstall()
         {
             _vendorPostHocObjectContext.Uninstall();
-            _settingService.DeleteSetting<VendorPostHocSettings>();
 
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Name");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShippingOptions.Description");
