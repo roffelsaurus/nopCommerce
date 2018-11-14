@@ -359,10 +359,23 @@ namespace Nop.Plugin.Shipping.VendorPostHoc.Services
             if (cart.Count > 0)
             {
                 var vendorids = cart.Select(i => i.Product.VendorId).Distinct();
-                if (vendorids.Count() > 1 || product.VendorId != vendorids.First())
+                if (vendorids.Count() != 1)
+                {
+                    warnings.Add(_localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.VendorCountError"));
+                }
+                else if (product.VendorId != vendorids.First())
                 {
                     warnings.Add(_localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.SingleVendorWarning"));
                 }
+            }
+            var vendorCustomer = _customerService.GetAllCustomers(vendorId: product.VendorId);
+            if (vendorCustomer.Count != 1)
+            {
+                warnings.Add(_localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.VendorCountError"));
+            }
+            if (vendorCustomer.First().Id == _workContext.CurrentCustomer.Id)
+            {
+                warnings.Add(_localizationService.GetResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.OwnProductWarning"));
             }
 
             // Retrade specific logic end

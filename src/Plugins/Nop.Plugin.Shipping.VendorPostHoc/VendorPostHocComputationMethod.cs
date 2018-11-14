@@ -122,6 +122,11 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.SingleVendorWarning",
                 "Only products from one vendor can be added to cart at a time.");
 
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.OwnProductWarning",
+                "This product is your own and cannot be purchased.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.VendorCountError",
+                "This product seems to have multiple vendors.");
+
             base.Install();
         }
 
@@ -141,6 +146,8 @@ namespace Nop.Plugin.Shipping.VendorPostHoc
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Invalid");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.AdjustOrderShippingModel.Message.Success");
             _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.SingleVendorWarning");
+            _localizationService.DeletePluginLocaleResource("Plugin.Shipping.VendorPostHoc.ShoppingCart.OwnProductWarning");
+
             base.Uninstall();
         }
 

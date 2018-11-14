@@ -1574,6 +1574,8 @@ namespace Nop.Plugin.Admin.ConfigurableImportManager.Services.ExportImport
                         product.OrderMinimumQuantity = 1;
                     if (isNew && metadata.Properties.All(p => p.PropertyName != "OrderMaximumQuantity"))
                         product.OrderMaximumQuantity = 99999999;
+                    if (isNew && metadata.Properties.All(p => p.PropertyName != "LowStockActivity"))
+                        product.LowStockActivity = LowStockActivity.Unpublish;
                     /*
                      ** End retrade logic. hardcoded defaults as of 22/07/18
                      * */
