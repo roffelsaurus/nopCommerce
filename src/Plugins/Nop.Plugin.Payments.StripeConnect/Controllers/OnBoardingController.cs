@@ -78,6 +78,11 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
                 SuccessNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Success",
                 _workContext.WorkingLanguage.Id,
                 defaultValue: "Onboarding successful!"));
+
+                var payoutchangesuccess = _onBoardingService.ChangePayoutSettings();
+
+
+
                 model.AlreadyOnboard = true;
             } else
             {

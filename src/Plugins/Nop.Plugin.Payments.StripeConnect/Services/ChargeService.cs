@@ -10,6 +10,7 @@ using System.Text;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {
+
     public class ChargeService : IChargeService
     {
         private readonly IWorkContext _workContext;
