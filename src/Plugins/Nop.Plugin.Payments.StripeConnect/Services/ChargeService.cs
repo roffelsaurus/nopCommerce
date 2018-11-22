@@ -10,7 +10,8 @@ using System.Text;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {
-
+    using Nop.Plugin.Payments.StripeConnect.Domain;
+    using static StripeUtils;
     public class ChargeService : IChargeService
     {
         private readonly IWorkContext _workContext;
@@ -19,6 +20,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         private readonly IWebHelper _webHelper;
         private readonly HttpClient _httpClient;
         private readonly ICustomerEntityService _customerEntityService;
+        private readonly IOrderChargeEntityService _orderChargeEntityService;
         private readonly StripeChargeService _stripeChargeService;
         private readonly StripeTokenService _stripetokenservice;
 
@@ -28,7 +30,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             IWebHelper webHelper,
 
             HttpClient httpClient,
-            ICustomerEntityService customerEntityService)
+            ICustomerEntityService customerEntityService,
+            IOrderChargeEntityService orderChargeEntityService)
         {
             _workContext = workContext;
             _logger = logger;
@@ -36,18 +39,20 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             _webHelper = webHelper;
             _httpClient = httpClient;
             _customerEntityService = customerEntityService;
+            _orderChargeEntityService = orderChargeEntityService;
             _stripeChargeService = new StripeChargeService(_stripeConnectPaymentSettings.SecretKey);
             _stripetokenservice = new StripeTokenService(_stripeConnectPaymentSettings.SecretKey);
         }
-
-
-        public ProcessPaymentResult Charge(string token, decimal orderTotal, decimal orderSubTotal, int sellerCustomerId)
+        
+        public ProcessPaymentResult Charge(string token,
+            decimal orderSubTotal, 
+            int sellerCustomerId,
+            ProcessPaymentRequest processPaymentRequest)
         {
-            var stripecustomer = _customerEntityService.GetOrCreate(sellerCustomerId);
-            var StripeBasedTotal = Convert.ToInt32(NopAmountToStripeAmount(orderTotal));
-            var stripebasedSubTotal = NopAmountToStripeAmount(orderSubTotal);
+            var stripeSeller = _customerEntityService.GetOrCreate(sellerCustomerId);
+            var StripeBasedTotal = NopDecimalToStripeInt(processPaymentRequest.OrderTotal);
+            var stripebasedSubTotal = NopDecimalToStripeDecimal(orderSubTotal);
             
-
             // fee is 20% of total without shipping
             var appFee = Convert.ToInt32(Math.Floor(stripebasedSubTotal * 0.2m)); // todo configurable appfee percent
             var chargeAmount = StripeBasedTotal - appFee;
@@ -64,20 +69,25 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
 
             var charge = _stripeChargeService.Create(chargeOptions, new StripeRequestOptions()
             {
-                // IdempotencyKey = GetIdempotencyKey(orderId) TODO include this?
-                StripeConnectAccountId = stripecustomer.StripeUserId
+                IdempotencyKey = processPaymentRequest.OrderGuid.ToString("N"),
+                StripeConnectAccountId = stripeSeller.StripeUserId
             });
-            return new ProcessPaymentResult()
+            var result = new ProcessPaymentResult();
+            if (charge.Paid)
             {
-                NewPaymentStatus = charge.Paid ?
-                Core.Domain.Payments.PaymentStatus.Paid : Core.Domain.Payments.PaymentStatus.Pending
-            };
+                result.NewPaymentStatus = Core.Domain.Payments.PaymentStatus.Paid;
+                var stripeOrderCharge = new StripeOrderCharge();
+                stripeOrderCharge.CustomerId = processPaymentRequest.CustomerId;
+                stripeOrderCharge.SellerCustomerId = sellerCustomerId;
+                stripeOrderCharge.OrderGuid = processPaymentRequest.OrderGuid;
+                stripeOrderCharge.StripeChargeId = charge.Id;
+                _orderChargeEntityService.Create(stripeOrderCharge);
+            }
+            else
+            {
+                result.AddError("Error " + charge.FailureCode + " " + charge.FailureMessage);
+            }
+            return result;
         }
-
-        private decimal NopAmountToStripeAmount(decimal amount)
-        {
-            return Math.Floor(amount * 100m); // TODO fix currency to use subcurrency, not 100m
-        }
-
     }
 }

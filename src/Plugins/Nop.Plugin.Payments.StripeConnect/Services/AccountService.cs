@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace Nop.Plugin.Payments.StripeConnect.Services
 {
-    public class PayoutService
+    public class AccountService : IAccountService
     {
         private readonly IWorkContext _workContext;
         private readonly ILogger _logger;
@@ -15,11 +15,10 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
         private readonly ICustomerEntityService _customerEntityService;
         private readonly StripeAccountService _stripeAccountService;
 
-        public PayoutService(IWorkContext workContext,
+        public AccountService(IWorkContext workContext,
             ILogger logger,
             StripeConnectPaymentSettings stripeConnectPaymentSettings,
             IWebHelper webHelper,
-
             HttpClient httpClient,
             ICustomerEntityService customerEntityService)
         {
@@ -32,26 +31,18 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             _stripeAccountService = new StripeAccountService(_stripeConnectPaymentSettings.SecretKey);
         }
 
-        bool ChangePayoutSettings(int customerId)
+        // Not used for MVP because Stripe standard accounts cant be changed this way, but code left for reference.
+        public bool ChangePayoutSettings(int customerId)
         {
             var domain = _customerEntityService.GetOrCreate(customerId);
-
-            var accgetopts = new StripeRequestOptions();
-            accgetopts.StripeConnectAccountId = domain.StripeUserId;
-
-            var account = _stripeAccountService.Get(accgetopts);
-            account.PayoutSchedule.DelayDays = 30;
-            account.PayoutSchedule.Interval = "days";
-
+            
             var updopts = new StripeAccountUpdateOptions();
-            updopts.TransferScheduleDelayDays = "30"
-            var postok = _stripeAccountService.Update(account.Id, updopts, accgetopts);
+            updopts.TransferScheduleDelayDays = "30";
+            updopts.TransferScheduleInterval = "daily";
+            
+            var postok = _stripeAccountService.Update(domain.StripeUserId, updopts);            
 
-            var options = new StripePayoutCreateOptions();
-            options.
-
-            var stripepayout = _stripeAccountService.(options);
-            return true;
+            return postok.PayoutSchedule.DelayDays == 30 && postok.PayoutSchedule.Interval == "daily";
         }
     }
 }

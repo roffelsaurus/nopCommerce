@@ -15,18 +15,14 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
     public class EventConsumer :
         IConsumer<PageRenderingEvent>
     {
-        
         private readonly IPaymentService _paymentService;
-
-
-
+        
         public EventConsumer(
             IPaymentService paymentService)
         {
             this._paymentService = paymentService;
         }
-
-      
+        
         public void HandleEvent(PageRenderingEvent eventMessage)
         {
             if (eventMessage?.Helper?.ViewContext?.ActionDescriptor == null)

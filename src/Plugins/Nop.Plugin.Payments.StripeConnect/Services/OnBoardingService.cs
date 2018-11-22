@@ -112,7 +112,5 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
             _customerEntityService.Update(domain);
             return true;
         }
-
-
     }
 }

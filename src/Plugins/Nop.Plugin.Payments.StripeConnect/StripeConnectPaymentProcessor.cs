@@ -33,6 +33,7 @@ namespace Nop.Plugin.Payments.StripeConnect
         private readonly ILogger _logger;
         private readonly IVendorService _vendorService;
         private readonly ICustomerService _customerService;
+        private readonly IRefundService _refundService;
 
         public StripeConnectPaymentProcessor(ILocalizationService localizationService,
             IWebHelper webHelper,
@@ -44,7 +45,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             IPriceCalculationService priceCalculationService,
             ILogger logger,
             IVendorService vendorService,
-            ICustomerService customerService )
+            ICustomerService customerService,
+            IRefundService refundService)
         {
             _localizationservice = localizationService;
             _webhelper = webHelper;
@@ -57,6 +59,7 @@ namespace Nop.Plugin.Payments.StripeConnect
             _logger = logger;
             _vendorService = vendorService;
             _customerService = customerService;
+            _refundService = refundService;
         }
 
         /// <summary>
@@ -100,11 +103,11 @@ namespace Nop.Plugin.Payments.StripeConnect
                 SecretKey = "",
                 ClientId = ""
             });
-
-
+            
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.LiveEnvironment", "Live Environment");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.PublishableKey", "Publishable Key");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.SecretKey", "Secret Key");
+            _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.ClientId", "Client Id");
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.AccountNavStripeIntegration",
                 "Stripe Onboarding");
 
@@ -116,11 +119,7 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded", "You are already onboarded!");
 
             _localizationservice.AddOrUpdatePluginLocaleResource("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard", "Pay with card");
-
-
-
             
-
             base.Install();
         }
 
@@ -133,7 +132,8 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.LiveEnvironment");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.PublishableKey");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.SecretKey");
-
+            _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.Fields.ClientId");
+            
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Consent");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.InvalidToken");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.Success");
@@ -141,9 +141,7 @@ namespace Nop.Plugin.Payments.StripeConnect
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.LinkText");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.OnBoarding.AlreadyOnboarded");
             _localizationservice.DeletePluginLocaleResource("Plugin.Payments.StripeConnect.PaymentInfo.PayWithCard");
-
-
-
+            
             base.Uninstall();
         }
         #endregion
@@ -240,7 +238,6 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public ProcessPaymentResult ProcessPayment(ProcessPaymentRequest processPaymentRequest)
         {
-
             var token = (string)processPaymentRequest.CustomValues[PaymentInfoFormKeys.Token];
 
             // todo error handling
@@ -248,7 +245,8 @@ namespace Nop.Plugin.Payments.StripeConnect
 
             var sellerCustomerId = Convert.ToInt32(processPaymentRequest.CustomValues[PaymentInfoFormKeys.SellerCustomerId]);
             var subTotal = Convert.ToDecimal(processPaymentRequest.CustomValues[PaymentInfoFormKeys.OrderSubTotal]);
-            return _chargeService.Charge(token, processPaymentRequest.OrderTotal ,subTotal, sellerCustomerId);
+            return _chargeService.Charge(token, subTotal, sellerCustomerId,
+                processPaymentRequest);
         }
 
         public ProcessPaymentResult ProcessRecurringPayment(ProcessPaymentRequest processPaymentRequest)
@@ -258,12 +256,11 @@ namespace Nop.Plugin.Payments.StripeConnect
 
         public RefundPaymentResult Refund(RefundPaymentRequest refundPaymentRequest)
         {
-            throw new NotImplementedException();
+            return _refundService.Refund(refundPaymentRequest);
         }
 
         public IList<string> ValidatePaymentForm(IFormCollection form)
         {
-            // toodo
             return new List<string>();
         }
 

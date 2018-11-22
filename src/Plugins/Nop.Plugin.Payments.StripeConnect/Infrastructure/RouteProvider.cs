@@ -22,20 +22,13 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
         /// <param name="routeBuilder">Route builder</param>
         public void RegisterRoutes(IRouteBuilder routeBuilder)
         {
-            //routeBuilder.MapLocalizedRoute("Wishlist", "wishlist/{customerGuid?}",
-            //    new { controller = "ShoppingCart", action = "Wishlist" });
-            
             routeBuilder.MapRoute(ONBOARDING_NAME, ONBOARDING_ROUTE,
                 new { controller = "OnBoarding", action = "Index" });
 
             routeBuilder.MapRoute(ONBOARDING_REDIRECT_NAME, ONBOARDING_REDIRECT_ROUTE,
                 new { controller = "OnBoarding", action = "Redirect" });
-            //routeBuilder.MapRoute(CREATE_TOKEN_NAME, CREATE_TOKEN_ROUTE,
-            //    new { controller = "StripeCheckout", action = "CreateToken" });
         }
         
-        
-
         /// <summary>
         /// Gets a priority of route provider
         /// </summary>

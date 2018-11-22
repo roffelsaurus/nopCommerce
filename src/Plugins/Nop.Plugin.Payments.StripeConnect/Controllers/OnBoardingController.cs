@@ -23,13 +23,14 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
         private readonly ILogger _logger;
         private readonly ILocalizationService _localizationService;
         private readonly ICustomerEntityService _customerEntityService;
+        private readonly IAccountService _accountService;
 
         public OnBoardingController(IWorkContext workContext,
             IOnBoardingService onBoardingService,
             ILogger logger,
             ILocalizationService localizationService,
-            ICustomerEntityService customerEntityService
-
+            ICustomerEntityService customerEntityService,
+            IAccountService accountService
             )
         {
             _workContext = workContext;
@@ -37,6 +38,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             _logger = logger;
             _localizationService = localizationService;
             _customerEntityService = customerEntityService;
+            _accountService = accountService;
         }
 
         [HttpsRequirement(SslRequirement.Yes)]
@@ -75,16 +77,13 @@ namespace Nop.Plugin.Payments.StripeConnect.Controllers
             var success = _onBoardingService.GetNewAccessToken(code, customerId.Value);
             if (success)
             {
-                SuccessNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Success",
-                _workContext.WorkingLanguage.Id,
-                defaultValue: "Onboarding successful!"));
-
-                var payoutchangesuccess = _onBoardingService.ChangePayoutSettings();
-
-
-
                 model.AlreadyOnboard = true;
-            } else
+
+                SuccessNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Success",
+                                    _workContext.WorkingLanguage.Id,
+                                    defaultValue: "Onboarding successful!"));
+            }
+            else
             {
                 ErrorNotification(_localizationService.GetResource("Plugin.Payments.StripeConnect.OnBoarding.Fail",
                 _workContext.WorkingLanguage.Id,

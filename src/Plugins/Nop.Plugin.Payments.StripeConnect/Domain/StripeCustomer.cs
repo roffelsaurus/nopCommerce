@@ -13,5 +13,4 @@ namespace Nop.Plugin.Payments.StripeConnect.Domain
         public string StripeUserId { get; set; }
         public string StripePublishableKey { get; set; }
     }
-    
 }

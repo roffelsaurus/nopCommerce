@@ -21,6 +21,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new StripeCustomerMap());
+            modelBuilder.ApplyConfiguration(new StripeOrderChargeMap());
             base.OnModelCreating(modelBuilder);
         }
         
@@ -67,7 +68,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Data
         
         public void Uninstall()
         {
-            this.DropPluginTable(nameof(StripeCustomerMap));
+            this.DropPluginTable(nameof(StripeCustomer));
+            this.DropPluginTable(nameof(StripeOrderCharge));
         }
     }
 }

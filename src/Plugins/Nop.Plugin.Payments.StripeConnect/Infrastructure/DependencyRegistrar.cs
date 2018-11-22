@@ -27,7 +27,8 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
             builder.RegisterInstance(new HttpClient()).SingleInstance();
             builder.RegisterType<OnBoardingService>().As<IOnBoardingService>().SingleInstance();
             builder.RegisterType<ChargeService>().As<IChargeService>();
-
+            builder.RegisterType<AccountService>().As<IAccountService>();
+            builder.RegisterType<RefundService>().As<IRefundService>();
             //data context
             builder.RegisterPluginDataContext<Data.StripeConnectObjectContext>("nop_object_context_stripeconnect");
 
@@ -35,7 +36,12 @@ namespace Nop.Plugin.Payments.StripeConnect.Infrastructure
             builder.RegisterType<EfRepository<Domain.StripeCustomer>>().As<IRepository<Domain.StripeCustomer>>()
                 .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_stripeconnect"))
                 .InstancePerLifetimeScope();
+            builder.RegisterType<EfRepository<Domain.StripeOrderCharge>>().As<IRepository<Domain.StripeOrderCharge>>()
+                .WithParameter(ResolvedParameter.ForNamed<IDbContext>("nop_object_context_stripeconnect"))
+                .InstancePerLifetimeScope();
+            
             builder.RegisterType<CustomerEntityService>().As<ICustomerEntityService>().InstancePerLifetimeScope();
+            builder.RegisterType<OrderChargeEntityService>().As<IOrderChargeEntityService>().InstancePerLifetimeScope();
         }
 
         /// <summary>
