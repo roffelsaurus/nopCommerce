@@ -183,3 +183,4 @@ src/packages/*
 
 src/Presentation/Nop.Web/Themes
 !src/Presentation/Nop.Web/Themes/DefaultClean
+!src/Presentation/Nop.Web/Themes/Emporio
