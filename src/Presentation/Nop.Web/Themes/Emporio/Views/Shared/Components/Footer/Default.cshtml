@@ -5,7 +5,7 @@
 @inject IStoreContext storeContext;
 
 <div class="footer">
-    <div class="footer-upper-first">
+    @*<div class="footer-upper-first">
         <div class="footer-block about-us">
             @await Component.InvokeAsync("TopicBlock", new { systemName = "AboutUs" })
         </div>
@@ -25,14 +25,8 @@
                     <a>@storeContext.CurrentStore.CompanyPhoneNumber </a>
                 </li>
             </ul>
-            @*<div class="sub-title">@T("account.associatedexternalauth.email	")</div>
-                <ul class="list mrgBottom">
-                    <li>
-                        <a>mail@example.com</a>
-                    </li>
-                </ul>*@
         </div>
-    </div>
+    </div>*@
     <div class="footer-upper">
 
         <div class="footer-block information">
@@ -56,7 +50,7 @@
         </div>
 
         <div class="footer-block customer-service">
-            <div class="title">
+            @*<div class="title">
                 <strong>@T("Footer.CustomerService")</strong>
             </div>
             <ul class="list">
@@ -96,7 +90,7 @@
                 {
                     <li><a href="@Url.RouteUrl("CheckGiftCardBalance")">@T("CheckGiftCardBalance")</a></li>
                 }
-            </ul>
+            </ul>*@
         </div>
 
         <div class="footer-block my-account">

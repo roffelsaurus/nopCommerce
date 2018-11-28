@@ -1258,7 +1258,7 @@ label, label + * {
 
         .ui-dialog-content .back-in-stock-subscription-page .button-1 {
             border: none;
-            background-color: #009A4C; 
+            background-color: #015C4A;
             padding: 10px 15px;
             font-size: 15px;
             color: #fff;
@@ -1266,7 +1266,7 @@ label, label + * {
         }
 
             .ui-dialog-content .back-in-stock-subscription-page .button-1:hover {
-                background-color: #97E742;
+                background-color: #E89500;
             }
 
 .eu-cookie-bar-notification {
@@ -1293,14 +1293,14 @@ label, label + * {
         min-width: 60px;
         margin: 5px 0 10px;
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 8px 12px;
         font-size: 14px;
         color: #fff;
     }
 
         .eu-cookie-bar-notification button:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
     .eu-cookie-bar-notification a {
@@ -1316,7 +1316,7 @@ label, label + * {
 .admin-header-links {
     position: relative;
     z-index: 1;
-    background-color: #E89500;
+    background-color: #015C4A;
     text-align: center;
     color: #eee;
 }
@@ -1533,7 +1533,7 @@ label, label + * {
 
 #topcartlink {
     display: inline-block;
-    background: #015C4A; 
+    background: #009A4C;
 }
 
     #topcartlink a:before {
@@ -1693,7 +1693,7 @@ label, label + * {
 
 
 .footer {
-    background-color: #015C4A;
+    background-color: #009A4C;
     text-align: center;
 }
 
@@ -2139,7 +2139,7 @@ label, label + * {
 
     .poll .buttons input {
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 20px;
         font-size: 12px;
         color: #fff;
@@ -2151,7 +2151,7 @@ label, label + * {
     }
 
         .poll .buttons input:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .poll-total-votes {
@@ -2247,7 +2247,7 @@ label, label + * {
 
     .contact-vendor .button-2 {
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 15px;
         font-size: 14px;
         color: #fff;
@@ -2255,7 +2255,7 @@ label, label + * {
     }
 
         .contact-vendor .button-2:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .product-selectors {
@@ -2442,7 +2442,7 @@ label, label + * {
 }
 
     .remove-filter a {
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 20px;
         font-size: 12px;
         color: #fff;
@@ -2649,7 +2649,7 @@ label, label + * {
     border: 1px solid #0f0f0f;
     margin: 0 5px;
     border-radius: 180px;
-    background-color: #009A4C; 
+    background-color: #015C4A;
 }
 
 
@@ -2679,7 +2679,7 @@ label, label + * {
     .product-grid .item-box .product-box-add-to-cart-button:hover,
     .product-grid .item-box .add-to-compare-list-button:hover,
     .product-grid .item-box .add-to-wishlist-button:hover {
-        background-color: #97E742;
+        background-color: #E89500;
         border-color: #333;
     }
 
@@ -2697,7 +2697,7 @@ label, label + * {
 
 .product-list .item-box .product-box-add-to-cart-button {
     width: 60%;
-    background-color: #009A4C;
+background-color: #015C4A;
     color: #fff;
     text-align: center;
     font-family: 'Oswald';
@@ -3481,7 +3481,7 @@ label, label + * {
 .overview .add-to-cart-button,
 .variant-overview .add-to-cart-button {
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 0 24px;
     color: #fff;
     height: 50px;
@@ -3503,7 +3503,7 @@ label, label + * {
 
     .overview .add-to-cart-button:hover,
     .variant-overview .add-to-cart-button:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 
@@ -3855,7 +3855,7 @@ label, label + * {
     }
 
     .attribute-squares .selected-value .attribute-square-container {
-        background-color: #015C4A; 
+        background-color: #009A4C;
     }
 
     .attribute-squares li input {
@@ -4061,7 +4061,7 @@ label, label + * {
 
     .write-review .button-1 {
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 25px;
         text-align: center;
         font-size: 15px;
@@ -4070,7 +4070,7 @@ label, label + * {
     }
 
         .write-review .button-1:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .product-reviews-page .result,
@@ -4208,7 +4208,7 @@ label, label + * {
 .wishlist-content .email-a-friend-wishlist-button,
 .wishlist-content .update-wishlist-button,
 .wishlist-content .wishlist-add-to-cart-button {
-    background-color: #009A4C; 
+    background-color: #015C4A;
     text-transform: uppercase;
     font-family: "Oswald";
 }
@@ -4216,7 +4216,7 @@ label, label + * {
     .wishlist-content .email-a-friend-wishlist-button:hover,
     .wishlist-content .update-wishlist-button:hover,
     .wishlist-content .wishlist-add-to-cart-button:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .wishlist-page .share-info {
@@ -4249,7 +4249,7 @@ label, label + * {
     .compare-products-page .clear-list {
         display: inline-block;
         margin: 0 0 20px;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 15px;
         font-size: 12px;
         color: #fff;
@@ -4257,7 +4257,7 @@ label, label + * {
     }
 
         .compare-products-page .clear-list:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
     .compare-products-page .table-wrapper {
@@ -4426,14 +4426,14 @@ label, label + * {
         min-width: 86px;
         height: 40px;
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 0 15px;
         color: #fff;
         text-transform: uppercase;
     }
 
         .enter-password-form input[type="submit"]:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .home-page .topic-block-body p {
@@ -4470,7 +4470,7 @@ label, label + * {
 .apply-vendor-page .button-1 {
     min-width: 140px;
     border: none;
-    background-color: #009A4C; 
+    background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-size: 15px;
@@ -4481,7 +4481,7 @@ label, label + * {
     .contact-page .button-1:hover,
     .email-a-friend-page .button-1:hover,
     .apply-vendor-page .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .contact-page .topic-block,
@@ -4589,7 +4589,7 @@ label, label + * {
 .return-request-page .button-1 {
     min-width: 140px;
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-weight: 400;
@@ -4606,7 +4606,7 @@ label, label + * {
     .password-recovery-page .button-1:hover,
     .account-page .button-1:hover,
     .return-request-page .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .return-request-page h1 a {
@@ -5153,7 +5153,7 @@ label, label + * {
     }
 
         .shopping-cart-page .common-buttons input:hover {
-            background-color: #009A4C; 
+            background-color: #015C4A;
             color: #fff;
         }
 
@@ -5304,7 +5304,7 @@ label, label + * {
     display: block;
     width: 100%;
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 10px 20px;
     font-size: 14px;
     color: #fff;
@@ -5315,7 +5315,7 @@ label, label + * {
 }
 
     .cart-footer .checkout-button:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .cart-footer .checkout-disabled {
@@ -5346,7 +5346,7 @@ label, label + * {
     .cart-collaterals .button-2 {
         display: inline-block;
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 15px;
         color: #fff;
         text-transform: uppercase;
@@ -5356,7 +5356,7 @@ label, label + * {
     }
 
         .cart-collaterals .button-2:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
     .cart-collaterals .title {
@@ -5488,7 +5488,7 @@ label, label + * {
     display: inline-block;
     min-width: 140px;
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-size: 15px;
@@ -5497,7 +5497,7 @@ label, label + * {
 }
 
     .checkout-page .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .checkout-page .address-item {
@@ -5881,11 +5881,11 @@ div#checkout-step-confirm-order .buttons {
         }
 
         .order-details-page .page-title a.print-order-button {
-            background-color: #009A4C; 
+            background-color: #015C4A;
         }
 
             .order-details-page .page-title a.print-order-button:hover {
-                background-color: #97E742;
+                background-color: #E89500;
             }
 
 .order-details-page .order-overview {
@@ -5910,7 +5910,7 @@ div#checkout-step-confirm-order .buttons {
     display: inline-block;
     margin: 10px 0;
     border: none;
-    background-color: #009A4C; 
+    background-color: #015C4A;
     padding: 10px 15px;
     font-size: 12px;
     color: #fff;
@@ -5918,7 +5918,7 @@ div#checkout-step-confirm-order .buttons {
 }
 
     .order-details-page .repost .button-2:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .order-details-page .download a {
@@ -5939,7 +5939,7 @@ div#checkout-step-confirm-order .buttons {
 .user-agreement-page .button-1 {
     min-width: 140px;
     border: none;
-    background-color: #009A4C; 
+    background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-size: 15px;
@@ -5948,7 +5948,7 @@ div#checkout-step-confirm-order .buttons {
 }
 
     .user-agreement-page .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .order-details-page .tax-shipping-info {
@@ -5988,11 +5988,11 @@ div#checkout-step-confirm-order .buttons {
         }
 
         .order-details-page .actions input:first-child {
-            background-color: #009A4C; 
+            background-color: #015C4A;
         }
 
             .order-details-page .actions input:first-child:hover {
-                background-color: #97E742;
+                background-color: #E89500;
             }
 
 .order-details-page .totals.section {
@@ -6049,7 +6049,7 @@ div#checkout-step-confirm-order .buttons {
 .search-input .button-1 {
     min-width: 140px;
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-size: 15px;
@@ -6061,7 +6061,7 @@ div#checkout-step-confirm-order .buttons {
 }
 
     .search-input .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .search-results {
@@ -6307,7 +6307,7 @@ div#checkout-step-confirm-order .buttons {
     .news-items .buttons .read-more {
         display: inline-block;
         border: none;
-        background-color: #009A4C; 
+        background-color: #015C4A;
         padding: 10px 20px;
         font-size: 12px;
         color: #fff;
@@ -6319,7 +6319,7 @@ div#checkout-step-confirm-order .buttons {
 
         .blog-posts .buttons .read-more:hover,
         .news-items .buttons .read-more:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .new-comment {
@@ -6342,7 +6342,7 @@ div#checkout-step-confirm-order .buttons {
 
 .new-comment .button-1 {
     border: none;
-    background-color: #009A4C;
+background-color: #015C4A;
     padding: 10px 30px;
     text-align: center;
     font-size: 15px;
@@ -6351,7 +6351,7 @@ div#checkout-step-confirm-order .buttons {
 }
 
         .new-comment .button-1:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 .comment-list {
@@ -6658,7 +6658,7 @@ div#checkout-step-confirm-order .buttons {
     }
 
         .forums-table-section .view-all a:hover {
-            background-color: #97E742;
+            background-color: #E89500;
         }
 
 /* forum-page, topic page */
@@ -6720,7 +6720,7 @@ div#checkout-step-confirm-order .buttons {
 
     .forum-actions .actions a:hover,
     .topic-actions .actions a:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
     .forum-topic-page .actions a:hover,
@@ -7095,13 +7095,13 @@ div#checkout-step-confirm-order .buttons {
 .forum-edit-page .buttons .button-1,
 .move-topic-page .buttons .button-1,
 .private-messages .buttons .button-1 {
-    background-color: #009A4C; 
+    background-color: #015C4A;
 }
 
     .forum-edit-page .buttons .button-1:hover,
     .move-topic-page .buttons .button-1:hover,
     .private-messages .buttons .button-1:hover {
-        background-color: #97E742;
+        background-color: #E89500;
     }
 
 .private-message-send-page a {
@@ -7381,14 +7381,10 @@ pre {
 
 .header-wrapper {
     position: relative;
-    background: #015C4A; 
+    background: #009A4C;
     z-index: 10;
     height: 120px;
 }
-
-/*.html-home-page .header-wrapper {
-    background: rgba(0,0,0,0.75);
-}*/
 
 .nivoSlider {
     width: 100vw !important;
@@ -7503,7 +7499,7 @@ pre {
     display: none;
     position: absolute;
     width: 100%;
-    background: rgba(232,149,0,0.9);
+    background: rgba(0,154,76,0.95);
     padding: 10px 0;
     z-index: 1;
     top: 120px;
@@ -7789,7 +7785,7 @@ pre {
 }
 /*owl-carousel*/
 .owl-nav div {
-    background: #015C4A; 
+    background: #009A4C;
     width: 40px;
     height: 40px;
     position: absolute;
@@ -9753,7 +9749,7 @@ pre {
         .mini-shopping-cart input[type="button"] {
             display: inline-block;
             border: none;
-            background-color: #009A4C;
+        background-color: #015C4A;
             padding: 13px 20px;
             color: #fff;
             width: 100%;
@@ -9766,7 +9762,7 @@ pre {
         }
 
             .mini-shopping-cart input[type="button"]:hover {
-                background-color: #97E742;
+                background-color: #E89500;
             }
 
     .header-lower {
@@ -10143,7 +10139,7 @@ pre {
         display: inline-block;
         position: fixed;
         height: 100%;
-        background: #E89500;
+        background: #009A4C;
         left: -250px;
         top: 0px;
         width: 250px;
@@ -10786,7 +10782,7 @@ pre {
 	}
 
     .html-home-page .header-wrapper {
-        background: #015C4A;
+        background: #009A4C;
     }
 
     .registration-page .customer-password .inputs, .registration-page .customer-name .inputs {
