@@ -1595,38 +1595,38 @@ namespace Nop.Plugin.Admin.ConfigurableImportManager.Services.ExportImport
                         _productService.UpdateProduct(product);
                     }
 
-                    //quantity change history
-                    if (isNew || previousWarehouseId == product.WarehouseId)
-                    {
-                        _productService.AddStockQuantityHistoryEntry(product, product.StockQuantity - previousStockQuantity, product.StockQuantity,
-                            product.WarehouseId, _localizationService.GetResource("Admin.StockQuantityHistory.Messages.ImportProduct.Edit"));
-                    }
-                    //warehouse is changed 
-                    else
-                    {
-                        //compose a message
-                        var oldWarehouseMessage = string.Empty;
-                        if (previousWarehouseId > 0)
-                        {
-                            var oldWarehouse = _shippingService.GetWarehouseById(previousWarehouseId);
-                            if (oldWarehouse != null)
-                                oldWarehouseMessage = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.EditWarehouse.Old"), oldWarehouse.Name);
-                        }
+                    ////quantity change history
+                    //if (isNew || previousWarehouseId == product.WarehouseId)
+                    //{
+                    //    _productService.AddStockQuantityHistoryEntry(product, product.StockQuantity - previousStockQuantity, product.StockQuantity,
+                    //        product.WarehouseId, _localizationService.GetResource("Admin.StockQuantityHistory.Messages.ImportProduct.Edit"));
+                    //}
+                    ////warehouse is changed 
+                    //else
+                    //{
+                    //    //compose a message
+                    //    var oldWarehouseMessage = string.Empty;
+                    //    if (previousWarehouseId > 0)
+                    //    {
+                    //        var oldWarehouse = _shippingService.GetWarehouseById(previousWarehouseId);
+                    //        if (oldWarehouse != null)
+                    //            oldWarehouseMessage = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.EditWarehouse.Old"), oldWarehouse.Name);
+                    //    }
 
-                        var newWarehouseMessage = string.Empty;
-                        if (product.WarehouseId > 0)
-                        {
-                            var newWarehouse = _shippingService.GetWarehouseById(product.WarehouseId);
-                            if (newWarehouse != null)
-                                newWarehouseMessage = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.EditWarehouse.New"), newWarehouse.Name);
-                        }
+                    //    var newWarehouseMessage = string.Empty;
+                    //    if (product.WarehouseId > 0)
+                    //    {
+                    //        var newWarehouse = _shippingService.GetWarehouseById(product.WarehouseId);
+                    //        if (newWarehouse != null)
+                    //            newWarehouseMessage = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.EditWarehouse.New"), newWarehouse.Name);
+                    //    }
 
-                        var message = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.ImportProduct.EditWarehouse"), oldWarehouseMessage, newWarehouseMessage);
+                    //    var message = string.Format(_localizationService.GetResource("Admin.StockQuantityHistory.Messages.ImportProduct.EditWarehouse"), oldWarehouseMessage, newWarehouseMessage);
 
-                        //record history
-                        _productService.AddStockQuantityHistoryEntry(product, -previousStockQuantity, 0, previousWarehouseId, message);
-                        _productService.AddStockQuantityHistoryEntry(product, product.StockQuantity, product.StockQuantity, product.WarehouseId, message);
-                    }
+                    //    //record history
+                    //    _productService.AddStockQuantityHistoryEntry(product, -previousStockQuantity, 0, previousWarehouseId, message);
+                    //    _productService.AddStockQuantityHistoryEntry(product, product.StockQuantity, product.StockQuantity, product.WarehouseId, message);
+                    //}
 
                     var tempProperty = metadata.Manager.GetProperty("SeName");
                     if (tempProperty != null)
@@ -1742,48 +1742,48 @@ namespace Nop.Plugin.Admin.ConfigurableImportManager.Services.ExportImport
                         _productTagService.UpdateProductTags(product, productTags.Where(pt => !filter.Contains(pt)).ToArray());
                     }
 
-                    var picture1 = DownloadFile(metadata.Manager.GetProperty("Picture1")?.StringValue, downloadedFiles);
-                    var picture2 = DownloadFile(metadata.Manager.GetProperty("Picture2")?.StringValue, downloadedFiles);
-                    var picture3 = DownloadFile(metadata.Manager.GetProperty("Picture3")?.StringValue, downloadedFiles);
+                //    var picture1 = DownloadFile(metadata.Manager.GetProperty("Picture1")?.StringValue, downloadedFiles);
+                //    var picture2 = DownloadFile(metadata.Manager.GetProperty("Picture2")?.StringValue, downloadedFiles);
+                //    var picture3 = DownloadFile(metadata.Manager.GetProperty("Picture3")?.StringValue, downloadedFiles);
 
-                    productPictureMetadata.Add(new ProductPictureMetadata
-                    {
-                        ProductItem = product,
-                        Picture1Path = picture1,
-                        Picture2Path = picture2,
-                        Picture3Path = picture3,
-                        IsNew = isNew
-                    });
+                //    productPictureMetadata.Add(new ProductPictureMetadata
+                //    {
+                //        ProductItem = product,
+                //        Picture1Path = picture1,
+                //        Picture2Path = picture2,
+                //        Picture3Path = picture3,
+                //        IsNew = isNew
+                //    });
 
-                    lastLoadedProduct = product;
+                //    lastLoadedProduct = product;
 
-                    //update "HasTierPrices" and "HasDiscountsApplied" properties
-                    //_productService.UpdateHasTierPricesProperty(product);
-                    //_productService.UpdateHasDiscountsApplied(product);
+                //    //update "HasTierPrices" and "HasDiscountsApplied" properties
+                //    //_productService.UpdateHasTierPricesProperty(product);
+                //    //_productService.UpdateHasDiscountsApplied(product);
                 }
 
-                if (_mediaSettings.ImportProductImagesUsingHash && _pictureService.StoreInDb && _dataProvider.SupportedLengthOfBinaryHash > 0)
-                    ImportProductImagesUsingHash(productPictureMetadata, allProductsBySku);
-                else
-                    ImportProductImagesUsingServices(productPictureMetadata);
+                //if (_mediaSettings.ImportProductImagesUsingHash && _pictureService.StoreInDb && _dataProvider.SupportedLengthOfBinaryHash > 0)
+                //    ImportProductImagesUsingHash(productPictureMetadata, allProductsBySku);
+                //else
+                //    ImportProductImagesUsingServices(productPictureMetadata);
 
-                foreach (var downloadedFile in downloadedFiles)
-                {
-                    if (!_fileProvider.FileExists(downloadedFile))
-                        continue;
+                //foreach (var downloadedFile in downloadedFiles)
+                //{
+                //    if (!_fileProvider.FileExists(downloadedFile))
+                //        continue;
 
-                    try
-                    {
-                        _fileProvider.DeleteFile(downloadedFile);
-                    }
-                    catch
-                    {
+                //    try
+                //    {
+                //        _fileProvider.DeleteFile(downloadedFile);
+                //    }
+                //    catch
+                //    {
 
-                    }
-                }
+                //    }
+                //}
 
                 //activity log
-                _customerActivityService.InsertActivity("ImportProducts", string.Format(_localizationService.GetResource("ActivityLog.ImportProducts"), metadata.CountProductsInFile));
+                //_customerActivityService.InsertActivity("ImportProducts", string.Format(_localizationService.GetResource("ActivityLog.ImportProducts"), metadata.CountProductsInFile));
             }
         }
 
