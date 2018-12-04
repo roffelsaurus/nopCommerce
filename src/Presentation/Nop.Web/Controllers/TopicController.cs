@@ -10,6 +10,7 @@ using Nop.Web.Framework.Security;
 
 namespace Nop.Web.Controllers
 {
+    [CheckAccessPublicStore(ignore: true)] // Retrade specific logic. to make privacy policy and t&c publicly available.
     public partial class TopicController : BasePublicController
     {
         #region Fields
