@@ -18,7 +18,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
 
         public StripeOrderCharge Get(Guid orderGuid)
         {
-            var domainmodel = _repository.TableNoTracking
+            var domainmodel = _repository.Table
             .Where(i => i.OrderGuid == orderGuid)
             .SingleOrDefault();
 

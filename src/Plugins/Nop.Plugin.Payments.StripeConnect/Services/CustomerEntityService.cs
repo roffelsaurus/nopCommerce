@@ -18,7 +18,7 @@ namespace Nop.Plugin.Payments.StripeConnect.Services
 
         public StripeCustomer GetOrCreate(int customerId)
         {
-            var domainmodel = _repository.TableNoTracking
+            var domainmodel = _repository.Table
             .Where(i => i.CustomerId == customerId)
             .SingleOrDefault();
 
